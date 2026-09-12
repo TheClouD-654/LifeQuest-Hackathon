@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Life Quest — Sign In / Create Account</title>
   <meta name="description" content="Sign in or create your Life Quest account to start your adventure.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
   <link rel="stylesheet" href="../css/globals.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/animations.css">
@@ -186,10 +187,10 @@
     </div>
 
     <!-- Right forms panel -->
-    <div class="auth-right">
+    <main class="auth-right" id="main-content">
 
       <!-- Login Form -->
-      <div id="panel-login" class="auth-form-panel" role="main" aria-label="Login form">
+      <div id="panel-login" class="auth-form-panel" aria-label="Login form">
         <h1 class="auth-form-title">Welcome Back</h1>
         <p class="auth-form-subtitle">Continue your adventure</p>
 
@@ -239,7 +240,7 @@
       </div>
 
       <!-- Signup Form -->
-      <div id="panel-signup" class="auth-form-panel" role="main" aria-label="Signup form">
+      <div id="panel-signup" class="auth-form-panel" aria-label="Signup form">
         <h1 class="auth-form-title">Create Account</h1>
         <p class="auth-form-subtitle">Begin your legend</p>
 
@@ -297,7 +298,7 @@
         </div>
       </div>
 
-    </div>
+    </main>
   </div>
 
   <!-- Offline Banner -->
@@ -312,8 +313,17 @@
 
     // ─── Panel switching ─────────────────────────────────────────
     const showPanel = (panel) => {
-      document.querySelectorAll('.auth-form-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById(`panel-${panel}`).classList.add('active');
+      document.querySelectorAll('.auth-form-panel').forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-hidden', 'true');
+        p.setAttribute('hidden', '');
+      });
+      const activeEl = document.getElementById(`panel-${panel}`);
+      if (activeEl) {
+        activeEl.classList.add('active');
+        activeEl.removeAttribute('aria-hidden');
+        activeEl.removeAttribute('hidden');
+      }
       clearErrors();
     };
 
@@ -326,6 +336,9 @@
       if (el) { el.style.display = 'flex'; el.textContent = `⚠ ${msg}`; }
     };
 
+    // Helper: validate email address format
+    const isValidEmail = (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+
     // Check URL params for initial panel
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || 'login';
@@ -335,7 +348,7 @@
     const oauthError = params.get('error');
     if (oauthError === 'google_not_configured') {
       showPanel('login');
-      showError('login-error', 'Google OAuth is optional. Please use Email/Password sign in below, or the demo hero: demo@liferpg.dev / demo1234');
+      showError('login-error', 'Google sign-in is currently unavailable. Please sign in with your email and password below.');
     } else if (oauthError) {
       showPanel('login');
       showError('login-error', 'Google sign-in failed. Please try again or use email.');
@@ -390,6 +403,7 @@
       const password = document.getElementById('login-password').value;
 
       if (!email) return showError('login-error', 'Please enter your email.');
+      if (!isValidEmail(email)) return showError('login-error', 'Please enter a valid email address.');
       if (!password) return showError('login-error', 'Please enter your password.');
 
       setLoading('login-submit', true);
@@ -417,6 +431,7 @@
       const confirm = document.getElementById('signup-confirm').value;
 
       if (!email) return showError('signup-error', 'Please enter your email.');
+      if (!isValidEmail(email)) return showError('signup-error', 'Please enter a valid email address.');
       if (password.length < 6) return showError('signup-error', 'Password must be at least 6 characters.');
       if (password !== confirm) return showError('signup-error', 'Passwords do not match.');
 

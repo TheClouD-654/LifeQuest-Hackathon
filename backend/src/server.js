@@ -73,8 +73,29 @@ const sessionStore = new MySQLStore(sessionStoreOptions, dbPool);
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:", "blob:", "https://*.googleusercontent.com", "https://lh3.googleusercontent.com"],
+      connectSrc: ["'self'", "https://accounts.google.com"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'", "https://accounts.google.com"],
+    },
+  },
 }));
+
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+  );
+  next();
+});
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',

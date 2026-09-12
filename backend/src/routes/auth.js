@@ -17,7 +17,7 @@ const { requireAuth } = require('../middleware/auth');
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
 const signupValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  body('email').trim().isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('confirmPassword').custom((val, { req }) => {
     if (val !== req.body.password) throw new Error('Passwords do not match');
@@ -26,7 +26,7 @@ const signupValidation = [
 ];
 
 const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  body('email').trim().isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
   body('password').notEmpty().withMessage('Password required'),
 ];
 
