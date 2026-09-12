@@ -1,0 +1,246 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  googleId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile               Profile?
+  attributes            Attribute?
+  quests                Quest[]
+  questCompletions      QuestCompletion[]
+  activityLogs          ActivityLog[]
+  dailyActivitySummaries DailyActivitySummary[]
+  inventory             Inventory[]
+  userAchievements      UserAchievement[]
+  settings              UserSettings?
+
+  @@map("users")
+}
+
+model Profile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  username         String    @unique
+  level            Int       @default(1)
+  totalXp          Int       @default(0)
+  currentXp        Int       @default(0)
+  gold             Int       @default(100)
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastActivityDate DateTime?
+  avatar           String    @default("warrior")
+  class            String    @default("SCHOLAR")
+  title            String    @default("Novice")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Attribute {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  intellect  Int      @default(10)
+  strength   Int      @default(10)
+  discipline Int      @default(10)
+  vitality   Int      @default(10)
+  focus      Int      @default(10)
+  social     Int      @default(10)
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("attributes")
+}
+
+model Quest {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String    @db.Text
+  type        QuestType @default(CUSTOM)
+  category    String    @default("OTHER")
+  difficulty  Difficulty @default(MEDIUM)
+  xpReward    Int       @default(100)
+  goldReward  Int       @default(20)
+  status      QuestStatus @default(ACTIVE)
+  source      String    @default("manual")
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attributeRewards QuestAttributeReward[]
+  completions      QuestCompletion[]
+
+  @@map("quests")
+}
+
+model QuestAttributeReward {
+  id        String @id @default(cuid())
+  questId   String
+  attribute String
+  value     Int
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@map("quest_attribute_rewards")
+}
+
+model QuestCompletion {
+  id          String   @id @default(cuid())
+  questId     String
+  userId      String
+  completedAt DateTime @default(now())
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@map("quest_completions")
+}
+
+model ActivityLog {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime @db.Date
+  category        String
+  description     String?
+  durationMinutes Int
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model DailyActivitySummary {
+  id                   String   @id @default(cuid())
+  userId               String
+  date                 DateTime @db.Date
+  codingMinutes        Int      @default(0)
+  studyMinutes         Int      @default(0)
+  fitnessMinutes       Int      @default(0)
+  entertainmentMinutes Int      @default(0)
+  socialMinutes        Int      @default(0)
+  otherMinutes         Int      @default(0)
+  workMinutes          Int      @default(0)
+  readingMinutes       Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_activity_summaries")
+}
+
+model ShopItem {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  type        String
+  price       Int
+  rarity      String   @default("COMMON")
+  assetKey    String
+  createdAt   DateTime @default(now())
+
+  inventory Inventory[]
+
+  @@map("shop_items")
+}
+
+model Inventory {
+  id          String   @id @default(cuid())
+  userId      String
+  itemId      String
+  purchasedAt DateTime @default(now())
+  equipped    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@map("inventory")
+}
+
+model Achievement {
+  id               String @id @default(cuid())
+  name             String @unique
+  description      String
+  requirementType  String
+  requirementValue Int
+  iconKey          String @default("trophy")
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model UserSettings {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  theme                  String   @default("dark")
+  notificationsEnabled   Boolean  @default(true)
+  activityTrackingEnabled Boolean @default(true)
+  goals                  String   @default("CODING,STUDY") // comma-separated
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+enum QuestType {
+  ACTIVITY
+  PRODUCTIVITY
+  HEALTH
+  HABIT
+  CUSTOM
+  GENERATED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  EPIC
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  MISSED
+  DELETED
+}

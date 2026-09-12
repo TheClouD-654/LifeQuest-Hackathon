@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Create Your Character</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    body { padding: var(--space-xl) var(--space-lg); }
+
+    .creation-header {
+      text-align: center;
+      margin-bottom: var(--space-3xl);
+    }
+
+    .creation-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+
+    .creation-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+    }
+
+    /* Avatar Picker */
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-sm);
+    }
+
+    .avatar-option {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .avatar-option:hover {
+      border-color: var(--border-panel);
+      background: var(--bg-hover);
+    }
+
+    .avatar-option.selected {
+      border-color: var(--accent-cyan);
+      background: var(--accent-cyan-glow);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    }
+
+    /* Class Cards */
+    .class-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+    }
+
+    .class-card {
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-align: center;
+    }
+
+    .class-card:hover {
+      border-color: var(--border-panel);
+    }
+
+    .class-card.selected {
+      border-color: var(--accent-cyan);
+      background: var(--accent-cyan-glow);
+    }
+
+    .class-icon {
+      font-size: 2rem;
+      margin-bottom: var(--space-xs);
+    }
+
+    .class-name {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      letter-spacing: 0.08em;
+    }
+
+    .class-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Goals */
+    .goals-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    .goal-chip {
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .goal-chip:hover { border-color: var(--border-panel); }
+
+    .goal-chip.selected {
+      background: var(--accent-cyan-glow);
+      border-color: var(--border-panel);
+      color: var(--accent-cyan);
+    }
+
+    /* Preview */
+    .character-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    @media (max-width: 768px) {
+      .creation-grid { grid-template-columns: 1fr; }
+      .avatar-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+
+  <div class="creation-header">
+    <a href="/" style="font-family:var(--font-display);color:var(--accent-cyan);letter-spacing:0.1em;text-decoration:none">⚔ LIFE RPG</a>
+    <h1 style="margin-top:var(--space-lg);letter-spacing:0.1em">Your Journey Begins</h1>
+    <p style="color:var(--text-muted);margin-top:var(--space-sm)">Create your character and choose your path</p>
+  </div>
+
+  <form id="character-form" novalidate>
+    <div class="creation-grid">
+
+      <!-- Left Column -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg)">
+
+        <!-- Username -->
+        <div class="creation-section">
+          <div class="section-title">Your Name</div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="username">Hero Name</label>
+            <input type="text" id="username" class="form-input" placeholder="CloudWalker"
+                   maxlength="20" minlength="2" required aria-required="true"
+                   pattern="[a-zA-Z0-9_]+"
+                   autocomplete="username">
+            <span class="form-error" id="username-error" style="display:none;margin-top:4px"></span>
+            <span class="text-muted text-xs" style="margin-top:4px;display:block">Letters, numbers, underscores only. 2–20 characters.</span>
+          </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="creation-section">
+          <div class="section-title">Choose Avatar</div>
+          <div class="avatar-grid" role="radiogroup" aria-label="Avatar selection" id="avatar-grid">
+            <div class="avatar-option selected" data-avatar="scholar" role="radio" aria-checked="true" tabindex="0" aria-label="Scholar">🧙</div>
+            <div class="avatar-option" data-avatar="warrior" role="radio" aria-checked="false" tabindex="0" aria-label="Warrior">⚔️</div>
+            <div class="avatar-option" data-avatar="rogue" role="radio" aria-checked="false" tabindex="0" aria-label="Rogue">🗡️</div>
+            <div class="avatar-option" data-avatar="guardian" role="radio" aria-checked="false" tabindex="0" aria-label="Guardian">🛡️</div>
+            <div class="avatar-option" data-avatar="mage" role="radio" aria-checked="false" tabindex="0" aria-label="Mage">🔮</div>
+            <div class="avatar-option" data-avatar="ranger" role="radio" aria-checked="false" tabindex="0" aria-label="Ranger">🏹</div>
+            <div class="avatar-option" data-avatar="paladin" role="radio" aria-checked="false" tabindex="0" aria-label="Paladin">✨</div>
+            <div class="avatar-option" data-avatar="assassin" role="radio" aria-checked="false" tabindex="0" aria-label="Assassin">🌙</div>
+          </div>
+        </div>
+
+        <!-- Goals -->
+        <div class="creation-section">
+          <div class="section-title">Your Goals</div>
+          <p class="text-muted text-sm mb-md">Select areas you want to improve (choose at least 1)</p>
+          <div class="goals-grid" role="group" aria-label="Goal selection" id="goals-grid">
+            <div class="goal-chip selected" data-goal="CODING" role="checkbox" aria-checked="true" tabindex="0">💻 Coding</div>
+            <div class="goal-chip selected" data-goal="STUDY" role="checkbox" aria-checked="true" tabindex="0">📚 Study</div>
+            <div class="goal-chip" data-goal="FITNESS" role="checkbox" aria-checked="false" tabindex="0">💪 Fitness</div>
+            <div class="goal-chip" data-goal="READING" role="checkbox" aria-checked="false" tabindex="0">📖 Reading</div>
+            <div class="goal-chip" data-goal="PRODUCTIVITY" role="checkbox" aria-checked="false" tabindex="0">⚡ Productivity</div>
+            <div class="goal-chip" data-goal="SOCIAL" role="checkbox" aria-checked="false" tabindex="0">🤝 Social</div>
+            <div class="goal-chip" data-goal="DISCIPLINE" role="checkbox" aria-checked="false" tabindex="0">🎯 Discipline</div>
+            <div class="goal-chip" data-goal="BALANCE" role="checkbox" aria-checked="false" tabindex="0">⚖️ Balance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-lg)">
+
+        <!-- Class Selection -->
+        <div class="creation-section">
+          <div class="section-title">Choose Class</div>
+          <p class="text-muted text-sm mb-md">Your class gives starting bonuses. You can develop all attributes over time.</p>
+          <div class="class-grid" role="radiogroup" aria-label="Class selection" id="class-grid">
+            <div class="class-card selected" data-class="SCHOLAR" role="radio" aria-checked="true" tabindex="0">
+              <div class="class-icon">📚</div>
+              <div class="class-name">The Scholar</div>
+              <div class="class-desc">+5 Intellect<br>+3 Focus</div>
+            </div>
+            <div class="class-card" data-class="WARRIOR" role="radio" aria-checked="false" tabindex="0">
+              <div class="class-icon">⚔️</div>
+              <div class="class-name">The Warrior</div>
+              <div class="class-desc">+5 Strength<br>+3 Vitality</div>
+            </div>
+            <div class="class-card" data-class="GUARDIAN" role="radio" aria-checked="false" tabindex="0">
+              <div class="class-icon">🛡️</div>
+              <div class="class-name">The Guardian</div>
+              <div class="class-desc">+5 Discipline<br>+3 Vitality</div>
+            </div>
+            <div class="class-card" data-class="ROGUE" role="radio" aria-checked="false" tabindex="0">
+              <div class="class-icon">🗡️</div>
+              <div class="class-name">The Rogue</div>
+              <div class="class-desc">+5 Focus<br>+3 Discipline</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="creation-section">
+          <div class="section-title">Preview</div>
+          <div class="character-preview">
+            <div class="character-avatar" id="preview-avatar" style="width:80px;height:80px;font-size:2.5rem">🧙</div>
+            <div>
+              <div class="character-username" id="preview-name" style="font-size:1.1rem">Hero</div>
+              <div class="character-title" id="preview-title">"Novice"</div>
+              <div class="character-class-badge" id="preview-class" style="margin:6px auto;display:inline-flex">📚 Scholar</div>
+            </div>
+            <div style="display:flex;gap:var(--space-md);font-size:0.8rem;color:var(--text-muted)">
+              <span>LV 1</span>
+              <span>0 XP</span>
+              <span>🪙 100 Gold</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error + Submit -->
+        <div>
+          <div id="form-error" class="form-error mb-md" role="alert" aria-live="polite" style="display:none"></div>
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="create-btn">
+            ⚔ Begin Adventure
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    let selectedAvatar = 'scholar';
+    let selectedClass = 'SCHOLAR';
+    let selectedGoals = new Set(['CODING', 'STUDY']);
+
+    // ─── Auth check ───────────────────────────────────────────────
+    (async () => {
+      const user = await Utils.requireAuthRedirect();
+      if (!user) return;
+      // If already has profile, go to dashboard
+      if (user.profile) window.location.href = '/pages/dashboard.html';
+    })();
+
+    // ─── Avatar selection ─────────────────────────────────────────
+    document.getElementById('avatar-grid').addEventListener('click', (e) => {
+      const opt = e.target.closest('.avatar-option');
+      if (!opt) return;
+      document.querySelectorAll('.avatar-option').forEach(o => {
+        o.classList.remove('selected');
+        o.setAttribute('aria-checked', 'false');
+      });
+      opt.classList.add('selected');
+      opt.setAttribute('aria-checked', 'true');
+      selectedAvatar = opt.dataset.avatar;
+      document.getElementById('preview-avatar').textContent = opt.textContent;
+    });
+
+    // Keyboard nav for avatar
+    document.getElementById('avatar-grid').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); }
+    });
+
+    // ─── Class selection ──────────────────────────────────────────
+    const classIcons = { SCHOLAR: '📚', WARRIOR: '⚔️', GUARDIAN: '🛡️', ROGUE: '🗡️' };
+    document.getElementById('class-grid').addEventListener('click', (e) => {
+      const card = e.target.closest('.class-card');
+      if (!card) return;
+      document.querySelectorAll('.class-card').forEach(c => {
+        c.classList.remove('selected');
+        c.setAttribute('aria-checked', 'false');
+      });
+      card.classList.add('selected');
+      card.setAttribute('aria-checked', 'true');
+      selectedClass = card.dataset.class;
+      const className = card.querySelector('.class-name').textContent;
+      document.getElementById('preview-class').textContent = `${classIcons[selectedClass]} ${className.replace('The ', '')}`;
+    });
+
+    document.getElementById('class-grid').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); }
+    });
+
+    // ─── Goals selection ──────────────────────────────────────────
+    document.getElementById('goals-grid').addEventListener('click', (e) => {
+      const chip = e.target.closest('.goal-chip');
+      if (!chip) return;
+      const goal = chip.dataset.goal;
+      if (selectedGoals.has(goal)) {
+        if (selectedGoals.size > 1) {
+          selectedGoals.delete(goal);
+          chip.classList.remove('selected');
+          chip.setAttribute('aria-checked', 'false');
+        }
+      } else {
+        selectedGoals.add(goal);
+        chip.classList.add('selected');
+        chip.setAttribute('aria-checked', 'true');
+      }
+    });
+
+    document.getElementById('goals-grid').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); }
+    });
+
+    // ─── Live preview ──────────────────────────────────────────────
+    document.getElementById('username').addEventListener('input', (e) => {
+      const val = e.target.value.trim() || 'Hero';
+      document.getElementById('preview-name').textContent = val;
+    });
+
+    // ─── Form submit ──────────────────────────────────────────────
+    document.getElementById('character-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('form-error').style.display = 'none';
+
+      const username = document.getElementById('username').value.trim();
+      if (!username || username.length < 2) {
+        const err = document.getElementById('username-error');
+        err.style.display = 'flex';
+        err.textContent = '⚠ Username must be at least 2 characters.';
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        const err = document.getElementById('username-error');
+        err.style.display = 'flex';
+        err.textContent = '⚠ Username can only contain letters, numbers, underscores.';
+        return;
+      }
+
+      const btn = document.getElementById('create-btn');
+      btn._orig = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner" style="margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        await API.profile.create({
+          username,
+          avatar: selectedAvatar,
+          class: selectedClass,
+          goals: Array.from(selectedGoals),
+        });
+        window.location.href = '/pages/dashboard.html';
+      } catch (err) {
+        const errEl = document.getElementById('form-error');
+        errEl.style.display = 'flex';
+        errEl.textContent = `⚠ ${err.message || 'Failed to create character.'}`;
+        btn.innerHTML = btn._orig;
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

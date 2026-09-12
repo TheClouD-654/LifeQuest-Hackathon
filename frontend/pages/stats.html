@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Stats & Achievements</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">🏆 Stats & Achievements</h1>
+        <p class="page-subtitle">Your complete character overview and unlocked achievements.</p>
+      </div>
+
+      <div id="loading-state" class="loading-full">
+        <div class="spinner"></div>
+        <p class="text-muted">Loading your chronicles...</p>
+      </div>
+
+      <div id="stats-content" style="display:none">
+
+        <!-- Stats Summary -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)" id="stat-cards"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
+
+          <!-- Attributes Deep Dive -->
+          <div class="panel">
+            <div class="section-title">Attributes</div>
+            <div id="attrs-deep" style="display:flex;flex-direction:column;gap:var(--space-lg)"></div>
+          </div>
+
+          <!-- Activity Totals -->
+          <div class="panel">
+            <div class="section-title">Activity Totals (30 Days)</div>
+            <div id="activity-totals"></div>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="panel" style="margin-top:var(--space-lg)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+            <div class="section-title" style="margin:0">Achievements</div>
+            <span id="ach-count" class="text-muted text-sm"></span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Achievement filter">
+            <button class="tab-btn active" role="tab" data-ach-tab="all">All</button>
+            <button class="tab-btn" role="tab" data-ach-tab="unlocked">Unlocked</button>
+            <button class="tab-btn" role="tab" data-ach-tab="locked">Locked</button>
+          </div>
+
+          <div id="achievements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-md)"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('stats');
+
+    const ACHIEVEMENT_ICONS = {
+      QUEST_COUNT: '⚔', LEVEL: '⬆', STREAK: '🔥', LONGEST_STREAK: '🔥',
+      GOLD: '🪙', INTELLECT: '🧠', STRENGTH: '💪', DISCIPLINE: '🎯', TOTAL_XP: '⚡',
+    };
+
+    let allAchievements = [];
+    let achFilter = 'all';
+
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+      if (user.profile) document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+
+      try {
+        const [statsData, achievementsList] = await Promise.all([
+          API.stats.get(),
+          API.achievements.list(),
+        ]);
+
+        allAchievements = achievementsList;
+
+        renderStatCards(statsData);
+        renderAttributesDeep(statsData.attributes);
+        renderActivityTotals(statsData.activityTotals);
+        renderAchievements();
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('stats-content').style.display = 'block';
+        document.getElementById('stats-content').classList.add('page-enter');
+
+      } catch (err) {
+        document.getElementById('loading-state').innerHTML = `
+          <div class="error-state"><p>${err.message || 'Failed to load stats'}</p><button class="btn btn-primary btn-sm" onclick="location.reload()">↻ Retry</button></div>
+        `;
+      }
+    })();
+
+    const renderStatCards = (data) => {
+      const cards = [
+        { icon: '⬆', label: 'Level', value: data.profile?.level || 1, accent: 'var(--accent-cyan)' },
+        { icon: '⚡', label: 'Total XP', value: Utils.formatNumber(data.profile?.totalXp || 0), accent: 'var(--accent-cyan)' },
+        { icon: '⚔', label: 'Quests Done', value: Utils.formatNumber(data.quests?.completed || 0), accent: 'var(--diff-easy)' },
+        { icon: '📊', label: 'Completion', value: `${data.quests?.completionRate || 0}%`, accent: 'var(--accent-purple)' },
+        { icon: '🔥', label: 'Streak', value: `${data.streaks?.current || 0}d`, accent: '#fb923c' },
+        { icon: '🏆', label: 'Best Streak', value: `${data.streaks?.longest || 0}d`, accent: 'var(--accent-gold)' },
+        { icon: '🏅', label: 'Achievements', value: data.achievements?.unlocked || 0, accent: 'var(--accent-gold)' },
+        { icon: '🪙', label: 'Gold Held', value: Utils.formatNumber(data.profile?.gold || 0), accent: 'var(--accent-gold)' },
+      ];
+
+      document.getElementById('stat-cards').innerHTML = cards.map(card => `
+        <div class="panel panel-sm" style="text-align:center;border-color:${card.accent}20">
+          <div style="font-size:1.8rem;margin-bottom:var(--space-sm)">${card.icon}</div>
+          <div style="font-size:1.4rem;font-weight:800;color:${card.accent};font-family:var(--font-display)">${card.value}</div>
+          <div class="text-muted text-xs uppercase" style="margin-top:4px">${card.label}</div>
+        </div>
+      `).join('');
+    };
+
+    const renderAttributesDeep = (attrs) => {
+      if (!attrs) return;
+      const attrList = [
+        { key: 'intellect', label: 'Intellect', icon: '🧠', color: 'var(--attr-intellect)', desc: 'Grows with coding and study.' },
+        { key: 'strength', label: 'Strength', icon: '💪', color: 'var(--attr-strength)', desc: 'Grows with fitness activity.' },
+        { key: 'discipline', label: 'Discipline', icon: '🎯', color: 'var(--attr-discipline)', desc: 'Grows with quests and streaks.' },
+        { key: 'vitality', label: 'Vitality', icon: '❤️', color: 'var(--attr-vitality)', desc: 'Grows with wellness activities.' },
+        { key: 'focus', label: 'Focus', icon: '⚡', color: 'var(--attr-focus)', desc: 'Grows with deep work.' },
+        { key: 'social', label: 'Social', icon: '🤝', color: 'var(--attr-social)', desc: 'Grows with social activity.' },
+      ];
+
+      document.getElementById('attrs-deep').innerHTML = attrList.map(a => {
+        const val = attrs[a.key] || 0;
+        const pct = Math.min((val / 200) * 100, 100);
+        const tier = val >= 100 ? 'Elite' : val >= 50 ? 'Advanced' : val >= 20 ? 'Developing' : 'Novice';
+        return `
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-weight:700;font-size:0.875rem">${a.icon} ${a.label}</span>
+              <div style="display:flex;align-items:center;gap:var(--space-sm)">
+                <span class="text-muted text-xs">${tier}</span>
+                <span style="font-weight:800;font-size:1.1rem;color:${a.color}">${val}</span>
+              </div>
+            </div>
+            <div class="attr-track" style="height:10px">
+              <div class="attr-fill ${a.key}" style="width:${pct}%"></div>
+            </div>
+            <p class="text-muted text-xs" style="margin-top:4px">${a.desc}</p>
+          </div>
+        `;
+      }).join('');
+    };
+
+    const renderActivityTotals = (totals) => {
+      if (!totals) return;
+      const cats = [
+        { key: 'coding', label: 'Coding', icon: '💻', color: '#60a5fa' },
+        { key: 'study', label: 'Study', icon: '📚', color: '#a78bfa' },
+        { key: 'fitness', label: 'Fitness', icon: '💪', color: '#f87171' },
+        { key: 'reading', label: 'Reading', icon: '📖', color: '#4ade80' },
+        { key: 'work', label: 'Work', icon: '💼', color: '#00d4ff' },
+        { key: 'entertainment', label: 'Entertainment', icon: '🎮', color: '#f59e0b' },
+        { key: 'social', label: 'Social', icon: '🤝', color: '#fb923c' },
+      ];
+
+      const maxMins = Math.max(...cats.map(c => totals[c.key] || 0), 1);
+      const hasSome = cats.some(c => (totals[c.key] || 0) > 0);
+
+      if (!hasSome) {
+        document.getElementById('activity-totals').innerHTML = `<p class="text-muted text-sm">No activity logged yet. Start building your history!</p>`;
+        return;
+      }
+
+      document.getElementById('activity-totals').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+          ${cats.map(c => {
+            const mins = totals[c.key] || 0;
+            const pct = (mins / maxMins) * 100;
+            return `
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:0.8rem">${c.icon} ${c.label}</span>
+                  <span style="font-weight:700;font-size:0.8rem;color:${c.color}">${Utils.formatMinutes(mins)}</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+                  <div style="height:100%;background:${c.color};border-radius:4px;width:${pct}%;opacity:0.8;transition:width 0.8s ease"></div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    };
+
+    const renderAchievements = () => {
+      let filtered = allAchievements;
+      if (achFilter === 'unlocked') filtered = allAchievements.filter(a => a.unlocked);
+      if (achFilter === 'locked') filtered = allAchievements.filter(a => !a.unlocked);
+
+      const unlocked = allAchievements.filter(a => a.unlocked).length;
+      document.getElementById('ach-count').textContent = `${unlocked} / ${allAchievements.length} Unlocked`;
+
+      document.getElementById('achievements-grid').innerHTML = filtered.map(a => `
+        <div class="achievement-card ${a.unlocked ? 'unlocked' : 'locked'}">
+          <div class="achievement-icon">${ACHIEVEMENT_ICONS[a.requirementType] || '🏆'}</div>
+          <div style="flex:1">
+            <div class="achievement-name">${a.name}</div>
+            <div class="achievement-desc">${a.description}</div>
+            ${a.unlocked && a.unlockedAt ? `<div class="achievement-unlocked-at">✓ ${Utils.formatDate(a.unlockedAt)}</div>` : ''}
+          </div>
+          ${a.unlocked ? '<span style="color:var(--accent-gold);font-size:1.2rem">★</span>' : ''}
+        </div>
+      `).join('');
+    };
+
+    document.querySelectorAll('[data-ach-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-ach-tab]').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        achFilter = btn.dataset.achTab;
+        renderAchievements();
+      });
+    });
+  </script>
+</body>
+</html>

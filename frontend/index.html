@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Turn Your Life Into an Adventure</title>
+  <meta name="description" content="Life RPG turns your real-world daily activities into epic quests. Complete tasks, level up your character, earn gold, and build your legend — one day at a time.">
+  <meta property="og:title" content="Life RPG — Turn Your Life Into an Adventure">
+  <meta property="og:description" content="Complete real-world quests. Build your character. Level up.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#00d4ff">
+  <link rel="stylesheet" href="css/globals.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    /* Landing-specific styles */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+      overflow: hidden;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: var(--accent-cyan);
+      opacity: 0.5;
+    }
+
+    .hero-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      margin-bottom: var(--space-lg);
+      background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: var(--space-2xl);
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: var(--space-3xl);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: var(--space-lg);
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .hero-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Dashboard Preview */
+    .preview-section {
+      padding: var(--space-3xl) 0;
+      overflow: hidden;
+    }
+
+    .preview-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      max-width: 900px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-panel), 0 0 80px rgba(0, 212, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-purple), transparent);
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: var(--space-lg);
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-lg);
+    }
+
+    .preview-quests {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .preview-quest-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--diff-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    /* Features */
+    .features-section {
+      padding: var(--space-3xl) 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-lg);
+      margin-top: var(--space-2xl);
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      text-align: center;
+      transition: all var(--transition-normal);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-panel);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card), var(--shadow-glow-cyan);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-md);
+      display: block;
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--accent-cyan);
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-sm);
+    }
+
+    .feature-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* How it works */
+    .how-section {
+      padding: var(--space-3xl) 0;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+      margin-top: var(--space-2xl);
+      position: relative;
+    }
+
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(12.5% + 12px);
+      right: calc(12.5% + 12px);
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-panel), var(--accent-cyan-glow), var(--border-panel));
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--bg-panel);
+      border: 2px solid var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--accent-cyan);
+      margin: 0 auto var(--space-md);
+      box-shadow: var(--shadow-glow-cyan);
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* CTA Section */
+    .cta-section {
+      padding: var(--space-3xl) 0;
+      text-align: center;
+    }
+
+    .cta-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-xl);
+      padding: var(--space-3xl);
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0, 212, 255, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--space-xl) 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+      .features-grid, .steps-grid { grid-template-columns: 1fr; }
+      .steps-grid::before { display: none; }
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo" aria-label="Life RPG Home">⚔ LIFE RPG</a>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-sm">Log In</a>
+        <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-sm">Start Journey</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-glow hero-bg-glow"></div>
+
+    <div class="hero-eyebrow" aria-hidden="true">
+      <span>⚡</span>
+      Tech Zephyr 4.0
+      <span>⚡</span>
+    </div>
+
+    <h1 class="hero-heading" id="hero-heading">
+      Turn Your Life<br>Into an RPG
+    </h1>
+
+    <p class="hero-sub">
+      Complete real-world quests. Build your character.<br>
+      Level up your attributes. Earn gold. Live the adventure.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-lg" id="hero-cta-start">
+        ⚔ Start Your Journey
+      </a>
+      <a href="#how-it-works" class="btn btn-ghost btn-lg" id="hero-cta-learn">
+        How It Works
+      </a>
+    </div>
+
+    <div class="hero-stats" aria-label="App statistics">
+      <div class="hero-stat">
+        <span class="hero-stat-value">6</span>
+        <span class="hero-stat-label">Attributes</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">∞</span>
+        <span class="hero-stat-label">Quests</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">99+</span>
+        <span class="hero-stat-label">Levels</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">🔥</span>
+        <span class="hero-stat-label">Daily Streaks</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Preview -->
+  <section class="preview-section" aria-label="App preview">
+    <div class="container">
+      <div class="section-title" style="justify-content:center;max-width:400px;margin:0 auto var(--space-xl)">
+        Your RPG Command Center
+      </div>
+      <div class="preview-card scan-line">
+        <div class="preview-header">
+          <div style="display:flex;align-items:center;gap:var(--space-md)">
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);border:2px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🧙</div>
+            <div>
+              <div style="font-family:var(--font-display);font-size:1rem;color:var(--text-primary)">CloudWalker</div>
+              <div style="font-size:0.75rem;color:var(--accent-gold);font-style:italic">"The Relentless"</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--space-lg);align-items:center">
+            <div class="streak-display"><span class="streak-fire">🔥</span> 7 Day Streak</div>
+            <div class="gold-display"><div class="gold-coin"></div> 1,240</div>
+            <div class="level-number" style="font-size:1.5rem">LV8</div>
+          </div>
+        </div>
+        <div class="preview-grid">
+          <!-- Attributes -->
+          <div>
+            <div class="section-title" style="font-size:0.65rem">Attributes</div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+              <div class="attr-bar-row"><span class="attr-name">🧠 INT</span><div class="attr-track"><div class="attr-fill intellect" style="width:45%"></div></div><span class="attr-value">91</span></div>
+              <div class="attr-bar-row"><span class="attr-name">💪 STR</span><div class="attr-track"><div class="attr-fill strength" style="width:36%"></div></div><span class="attr-value">72</span></div>
+              <div class="attr-bar-row"><span class="attr-name">🎯 DIS</span><div class="attr-track"><div class="attr-fill discipline" style="width:42%"></div></div><span class="attr-value">84</span></div>
+              <div class="attr-bar-row"><span class="attr-name">❤️ VIT</span><div class="attr-track"><div class="attr-fill vitality" style="width:31%"></div></div><span class="attr-value">63</span></div>
+              <div class="attr-bar-row"><span class="attr-name">⚡ FOC</span><div class="attr-track"><div class="attr-fill focus" style="width:44%"></div></div><span class="attr-value">88</span></div>
+              <div class="attr-bar-row"><span class="attr-name">🤝 SOC</span><div class="attr-track"><div class="attr-fill social" style="width:27%"></div></div><span class="attr-value">54</span></div>
+            </div>
+          </div>
+          <!-- Quests -->
+          <div>
+            <div class="section-title" style="font-size:0.65rem">Today's Quests</div>
+            <div class="preview-quests">
+              <div class="preview-quest-item">
+                <span>⚔</span>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:0.85rem">The Builder</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted)">Code for 45 minutes</div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <span class="reward-chip xp" style="font-size:0.65rem">+100 XP</span>
+                  <span class="diff-badge medium" style="font-size:0.6rem">MED</span>
+                </div>
+              </div>
+              <div class="preview-quest-item" style="border-left-color:var(--diff-easy)">
+                <span>⚔</span>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:0.85rem">Iron Will</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted)">Exercise 20 minutes</div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <span class="reward-chip xp" style="font-size:0.65rem">+55 XP</span>
+                  <span class="diff-badge easy" style="font-size:0.6rem">EASY</span>
+                </div>
+              </div>
+              <div class="preview-quest-item" style="border-left-color:var(--diff-hard)">
+                <span>⚔</span>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:0.85rem">Digital Monk</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted)">Reduce entertainment</div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <span class="reward-chip xp" style="font-size:0.65rem">+90 XP</span>
+                  <span class="diff-badge hard" style="font-size:0.6rem">HARD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- XP Bar -->
+        <div style="margin-top:var(--space-lg)">
+          <div class="xp-bar-container">
+            <div class="xp-bar-labels">
+              <span class="text-cyan text-sm font-bold">LV8 → LV9</span>
+              <span class="text-secondary text-xs">780 / 1,000 XP</span>
+            </div>
+            <div class="xp-bar-track">
+              <div class="xp-bar-fill" style="width:78%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" aria-labelledby="features-heading">
+    <div class="container">
+      <div class="section-title" style="justify-content:center;max-width:400px;margin:0 auto var(--space-sm)">Why Life RPG</div>
+      <h2 id="features-heading" style="text-align:center;margin-bottom:var(--space-sm);font-size:clamp(1.4rem,3vw,2rem)">Not a Todo App. An Adventure.</h2>
+      <p style="text-align:center;color:var(--text-muted);max-width:500px;margin:0 auto">Every real-world action feeds your character's growth.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">⚡</span>
+          <div class="feature-title">Adaptive Quests</div>
+          <p class="feature-desc">The system analyzes your daily activity and generates 3–5 personalized quests every morning. No more generic tasks.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📈</span>
+          <div class="feature-title">Real Progression</div>
+          <p class="feature-desc">Six core attributes (Intellect, Strength, Discipline, Vitality, Focus, Social) grow with every quest you complete.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔥</span>
+          <div class="feature-title">Streaks & Momentum</div>
+          <p class="feature-desc">Build daily streaks that unlock harder quests and greater rewards. Don't break the chain.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🪙</span>
+          <div class="feature-title">Gold Economy</div>
+          <p class="feature-desc">Earn gold from completed quests. Spend it in the Armory on profile frames, titles, themes, and cosmetics.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🏆</span>
+          <div class="feature-title">Achievements</div>
+          <p class="feature-desc">Unlock achievements for streaks, level milestones, quest counts, and attribute mastery. Build your legend.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🛡</span>
+          <div class="feature-title">Secure by Design</div>
+          <p class="feature-desc">All progression is server-authoritative. Your XP, gold, and levels are tamper-proof and database-backed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-section" id="how-it-works" aria-labelledby="how-heading">
+    <div class="container">
+      <div class="section-title" style="justify-content:center;max-width:400px;margin:0 auto var(--space-sm)">The Loop</div>
+      <h2 id="how-heading" style="text-align:center;margin-bottom:var(--space-2xl)">How It Works</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">Log Activity</div>
+          <p class="step-desc">Record what you did today — coding, studying, working out, reading.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">Get Quests</div>
+          <p class="step-desc">The engine generates 3–5 personalized daily quests based on your activity.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">Complete & Earn</div>
+          <p class="step-desc">Finish quests to earn XP, Gold, and attribute boosts. Watch your character grow.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title">Level Up</div>
+          <p class="step-desc">Level up your character, unlock new titles, and spend Gold in the Armory.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" aria-labelledby="cta-heading">
+    <div class="container">
+      <div class="cta-box">
+        <div class="section-title" style="justify-content:center;max-width:400px;margin:0 auto var(--space-md)">Begin Now</div>
+        <h2 id="cta-heading" style="margin-bottom:var(--space-md)">Your Quest Awaits</h2>
+        <p style="color:var(--text-muted);margin-bottom:var(--space-xl);max-width:400px;margin-left:auto;margin-right:auto">
+          Join Life RPG and start turning your daily habits into epic character progression.
+        </p>
+        <div style="display:flex;gap:var(--space-md);justify-content:center;flex-wrap:wrap">
+          <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-lg" id="cta-signup">
+            ⚔ Create Your Character
+          </a>
+          <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-lg" id="cta-login">
+            Log In
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <div class="container">
+      <p>⚔ <strong style="color:var(--accent-cyan)">Life RPG</strong> — Tech Zephyr 4.0 Hackathon Submission</p>
+      <p style="margin-top:4px">Built with Node.js + MySQL + Vanilla JS</p>
+    </div>
+  </footer>
+
+  <!-- Offline Banner -->
+  <div class="offline-banner" role="alert" aria-live="polite">
+    📡 You are offline. Some features may be unavailable.
+  </div>
+
+  <script src="js/api/api.js"></script>
+  <script src="js/utils/helpers.js"></script>
+  <script>
+    // Init particles
+    Utils.initParticles();
+
+    // Check if already logged in
+    (async () => {
+      try {
+        const user = await API.auth.me();
+        if (user && user.profile) {
+          // Replace CTAs with dashboard link
+          document.getElementById('hero-cta-start').textContent = '→ Go to Dashboard';
+          document.getElementById('hero-cta-start').href = '/pages/dashboard.html';
+        }
+      } catch {}
+    })();
+  </script>
+</body>
+</html>

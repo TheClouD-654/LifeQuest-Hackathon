@@ -1,0 +1,605 @@
+/* ============================================================
+   LIFE RPG — Component Styles
+   Quest cards, character panel, shop items, etc.
+   ============================================================ */
+
+/* ─── Quest Card ─────────────────────────────────────────────── */
+.quest-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  cursor: default;
+}
+
+.quest-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--accent-cyan);
+  transition: width var(--transition-normal);
+}
+
+.quest-card:hover {
+  border-color: var(--border-panel);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card), var(--shadow-glow-cyan);
+}
+
+.quest-card.easy::before   { background: var(--diff-easy); }
+.quest-card.medium::before { background: var(--diff-medium); }
+.quest-card.hard::before   { background: var(--diff-hard); }
+.quest-card.epic::before   { background: var(--diff-epic); box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+
+.quest-card.completed {
+  opacity: 0.6;
+  border-color: rgba(34, 197, 94, 0.2);
+}
+.quest-card.completed::before { background: var(--diff-easy); }
+
+.quest-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  gap: var(--space-sm);
+}
+
+.quest-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.quest-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  flex: 1;
+}
+
+.quest-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  line-height: 1.5;
+}
+
+.quest-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
+
+.quest-rewards {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  margin-bottom: var(--space-md);
+}
+
+.reward-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.reward-chip.xp     { color: var(--accent-cyan); border-color: rgba(0, 212, 255, 0.2); background: rgba(0, 212, 255, 0.06); }
+.reward-chip.gold   { color: var(--accent-gold); border-color: rgba(255, 215, 0, 0.2); background: rgba(255, 215, 0, 0.06); }
+.reward-chip.attr   { color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.2); background: rgba(139, 92, 246, 0.06); }
+
+.quest-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.quest-complete-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-complete-btn.completing {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.quest-complete-btn.completed-state {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: var(--diff-easy) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  box-shadow: none !important;
+}
+
+/* Generated quest indicator */
+.quest-card.generated {
+  border-color: rgba(139, 92, 246, 0.2);
+}
+.quest-card.generated::after {
+  content: '⚡ AI';
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  font-size: 0.6rem;
+  color: var(--accent-purple);
+  background: rgba(139, 92, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+/* ─── Character Panel ─────────────────────────────────────────── */
+.character-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
+}
+
+.character-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-cyan);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.character-avatar:hover {
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.5), 0 0 80px rgba(0, 212, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.character-avatar .aura {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: conic-gradient(from 0deg, var(--accent-cyan), var(--accent-purple), var(--accent-gold), var(--accent-cyan)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: rotate-aura 4s linear infinite;
+}
+@keyframes rotate-aura {
+  to { filter: hue-rotate(360deg); }
+}
+
+.character-username {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.08em;
+}
+
+.character-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.character-class-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-panel);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  background: var(--accent-cyan-glow);
+}
+
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.level-number {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  line-height: 1;
+}
+
+.level-label {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ─── Stats Row ───────────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+}
+
+.stat-label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── Shop Item Card ─────────────────────────────────────────── */
+.shop-item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-item-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-panel);
+  box-shadow: var(--shadow-card);
+}
+
+.shop-item-card.legendary {
+  border-color: rgba(251, 191, 36, 0.25);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.08);
+}
+.shop-item-card.epic {
+  border-color: rgba(192, 132, 252, 0.25);
+}
+.shop-item-card.rare {
+  border-color: rgba(96, 165, 250, 0.25);
+}
+
+.shop-item-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}
+
+.shop-item-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+}
+
+.shop-item-desc {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.shop-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-sm);
+}
+
+.shop-item-price {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent-gold);
+  font-size: 1.05rem;
+}
+
+.shop-item-owned {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--diff-easy);
+  font-weight: 700;
+}
+
+/* ─── Achievement Card ───────────────────────────────────────── */
+.achievement-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all var(--transition-normal);
+}
+
+.achievement-card.locked {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+}
+
+.achievement-card.unlocked {
+  border-color: rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.05);
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.achievement-name {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.achievement-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.achievement-unlocked-at {
+  font-size: 0.7rem;
+  color: var(--accent-gold);
+  margin-top: 4px;
+}
+
+/* ─── Activity Log Item ─────────────────────────────────────── */
+.activity-log-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.activity-log-item:hover { border-color: var(--border-panel); }
+
+.activity-category-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.activity-category-badge.CODING      { background: rgba(96, 165, 250, 0.15);  color: var(--attr-intellect); }
+.activity-category-badge.STUDY       { background: rgba(139, 92, 246, 0.15);  color: var(--accent-purple); }
+.activity-category-badge.FITNESS     { background: rgba(248, 113, 113, 0.15); color: var(--attr-strength); }
+.activity-category-badge.READING     { background: rgba(74, 222, 128, 0.15);  color: var(--attr-vitality); }
+.activity-category-badge.ENTERTAINMENT { background: rgba(245, 158, 11, 0.15); color: var(--diff-medium); }
+.activity-category-badge.SOCIAL      { background: rgba(251, 146, 60, 0.15);  color: var(--attr-social); }
+.activity-category-badge.WORK        { background: rgba(0, 212, 255, 0.1);    color: var(--accent-cyan); }
+.activity-category-badge.OTHER       { background: rgba(100, 116, 139, 0.15); color: var(--text-secondary); }
+
+/* ─── Insight Cards ──────────────────────────────────────────── */
+.insight-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.insight-card.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.insight-card.success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: var(--diff-easy);
+}
+
+.insight-card.info {
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid var(--border-panel);
+  color: var(--text-secondary);
+}
+
+/* ─── Progress Circular ──────────────────────────────────────── */
+.progress-ring-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.06);
+}
+
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--accent-cyan);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.4));
+}
+
+.progress-ring-text {
+  position: absolute;
+  text-align: center;
+}
+
+/* ─── Dashboard Grid ─────────────────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  position: sticky;
+  top: 80px;
+}
+
+.dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-left {
+    position: static;
+  }
+}
+
+/* ─── Inventory Item ──────────────────────────────────────────── */
+.inventory-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.inventory-item.equipped {
+  border-color: var(--border-gold);
+  box-shadow: 0 0 15px var(--accent-gold-glow);
+}
+
+.equipped-badge {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: rgba(255, 215, 0, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── Page Header ─────────────────────────────────────────────── */
+.page-header {
+  padding: var(--space-xl) 0 var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-xl);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* ─── Particle Background ─────────────────────────────────────── */
+#particles-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.4;
+}

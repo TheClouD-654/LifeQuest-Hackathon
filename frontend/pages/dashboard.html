@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Status</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    body { padding-bottom: var(--space-3xl); }
+
+    .dash-main {
+      padding: var(--space-xl) 0;
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .dash-left {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      position: sticky;
+      top: 80px;
+    }
+
+    .dash-right {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    @media (max-width: 1024px) {
+      .dash-grid { grid-template-columns: 1fr; }
+      .dash-left { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo" aria-label="Life RPG Home">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level" aria-label="Character level">LV 1</span>
+        <div class="gold-display" id="nav-gold" aria-label="Gold amount"><div class="gold-coin" aria-hidden="true"></div><span data-gold>0</span></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="dash-main" id="main-content">
+    <div class="container">
+
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-full" aria-label="Loading your character data">
+        <div class="spinner" style="width:48px;height:48px;border-width:3px"></div>
+        <p class="text-muted">Loading your adventure...</p>
+      </div>
+
+      <!-- Main content (hidden until loaded) -->
+      <div id="dashboard-content" class="dash-grid" style="display:none">
+
+        <!-- LEFT COLUMN -->
+        <div class="dash-left">
+
+          <!-- Character Panel -->
+          <div class="panel" id="character-panel" aria-label="Character information">
+            <div class="character-panel">
+              <div class="character-avatar" id="char-avatar" aria-hidden="true">🧙</div>
+              <div>
+                <div class="character-username" id="char-username"></div>
+                <div class="character-title" id="char-title"></div>
+              </div>
+              <div class="character-class-badge" id="char-class"></div>
+
+              <!-- Level -->
+              <div style="width:100%">
+                <div style="display:flex;align-items:baseline;gap:var(--space-sm);justify-content:center;margin-bottom:var(--space-sm)">
+                  <span class="text-muted text-sm">LEVEL</span>
+                  <span class="level-number" id="char-level"></span>
+                </div>
+                <div id="xp-bar-container"></div>
+              </div>
+
+              <!-- Streak & Gold -->
+              <div class="stats-row" style="width:100%">
+                <div class="stat-item">
+                  <div class="streak-display streak-active" id="char-streak" aria-label="Current streak">
+                    <span class="streak-fire" aria-hidden="true">🔥</span>
+                    <span id="streak-count">0</span>
+                  </div>
+                  <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-item">
+                  <div class="gold-display" aria-label="Gold balance">
+                    <div class="gold-coin" aria-hidden="true"></div>
+                    <span id="char-gold" data-gold>0</span>
+                  </div>
+                  <div class="stat-label">Gold</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attributes Panel -->
+          <div class="panel" id="attributes-panel" aria-label="Character attributes">
+            <div class="section-title">Attributes</div>
+            <div id="attributes-list" style="display:flex;flex-direction:column;gap:var(--space-md)">
+              <!-- Skeleton -->
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+              <div class="skeleton" style="height:16px;border-radius:8px"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="dash-right">
+
+          <!-- Today's Quests -->
+          <div class="panel" id="quests-panel" aria-label="Today's quests">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+              <div class="section-title" style="margin-bottom:0">Today's Quests</div>
+              <div style="display:flex;gap:var(--space-sm)">
+                <button class="btn btn-ghost btn-sm" id="refresh-missions-btn" aria-label="Refresh quests">↻ Refresh</button>
+                <a href="/pages/quests.html" class="btn btn-primary btn-sm" aria-label="View all quests">+ Custom Quest</a>
+              </div>
+            </div>
+            <div id="quests-list">
+              <!-- Skeleton -->
+              <div class="skeleton" style="height:140px;margin-bottom:var(--space-sm)"></div>
+              <div class="skeleton" style="height:140px;margin-bottom:var(--space-sm)"></div>
+              <div class="skeleton" style="height:140px"></div>
+            </div>
+          </div>
+
+          <!-- Activity Summary -->
+          <div class="panel" id="activity-panel" aria-label="Today's activity">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+              <div class="section-title" style="margin-bottom:0">Today's Activity</div>
+              <a href="/pages/activity.html" class="btn btn-ghost btn-sm">+ Log Activity</a>
+            </div>
+            <div id="activity-summary"></div>
+          </div>
+
+          <!-- Recent Achievements -->
+          <div class="panel" id="achievements-panel" aria-label="Recent achievements">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+              <div class="section-title" style="margin-bottom:0">Achievements</div>
+              <a href="/pages/stats.html" class="btn btn-ghost btn-sm">View All</a>
+            </div>
+            <div id="achievements-list">
+              <div class="skeleton" style="height:60px;margin-bottom:var(--space-sm)"></div>
+              <div class="skeleton" style="height:60px"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" aria-live="polite" aria-label="Notifications"></div>
+
+  <!-- Offline Banner -->
+  <div class="offline-banner" role="alert" aria-live="polite">
+    📡 You are offline. Your progress won't sync until you reconnect.
+  </div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script src="../js/animations/questComplete.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('dashboard');
+
+    const AVATAR_EMOJIS = {
+      scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️',
+      mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙',
+    };
+
+    const CLASS_LABELS = {
+      SCHOLAR: '📚 Scholar', WARRIOR: '⚔️ Warrior',
+      GUARDIAN: '🛡️ Guardian', ROGUE: '🗡️ Rogue',
+    };
+
+    let characterData = null;
+
+    // ─── Load Dashboard ───────────────────────────────────────────
+    const loadDashboard = async () => {
+      try {
+        const user = await Utils.checkProfileOrRedirect();
+        if (!user) return;
+
+        // Load everything in parallel
+        const [profile, attrs, missions, dailyActivity, achievements] = await Promise.all([
+          API.profile.get(),
+          API.attributes.get(),
+          API.missions.today(),
+          API.activity.daily(),
+          API.achievements.list(),
+        ]);
+
+        characterData = { profile, attrs };
+
+        renderCharacter(profile, attrs);
+        renderQuests(missions);
+        renderActivitySummary(dailyActivity);
+        renderAchievements(achievements);
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'grid';
+        document.getElementById('dashboard-content').classList.add('page-enter');
+
+      } catch (err) {
+        document.getElementById('loading-state').innerHTML = `
+          <div class="error-state">
+            <span style="font-size:2rem">⚠</span>
+            <h3 style="font-family:var(--font-display)">The System Could Not Sync</h3>
+            <p class="text-muted">Your progress is safe.</p>
+            <button class="btn btn-primary" onclick="loadDashboard()">↻ Try Again</button>
+          </div>
+        `;
+      }
+    };
+
+    // ─── Render Character ─────────────────────────────────────────
+    const renderCharacter = (profile, attrs) => {
+      // Avatar
+      const avatarEl = document.getElementById('char-avatar');
+      avatarEl.textContent = AVATAR_EMOJIS[profile.avatar] || '🧙';
+
+      // Name & title
+      document.getElementById('char-username').textContent = profile.username;
+      document.getElementById('char-title').textContent = `"${profile.title}"`;
+      document.getElementById('char-class').textContent = CLASS_LABELS[profile.class] || profile.class;
+
+      // Level
+      document.getElementById('char-level').textContent = profile.level;
+
+      // XP bar
+      document.getElementById('xp-bar-container').innerHTML = Utils.buildXPBar(profile.currentXp, profile.xpRequired, profile.level);
+
+      // Streak
+      document.getElementById('streak-count').textContent = profile.currentStreak;
+      if (profile.currentStreak === 0) {
+        document.getElementById('char-streak').classList.remove('streak-active');
+      }
+
+      // Gold
+      document.getElementById('char-gold').textContent = Utils.formatNumber(profile.gold);
+      const navGoldEl = document.querySelector('#nav-gold [data-gold]');
+      if (navGoldEl) navGoldEl.textContent = Utils.formatNumber(profile.gold);
+
+      // Nav level
+      const navLevel = document.getElementById('nav-level');
+      if (navLevel) navLevel.textContent = `LV ${profile.level}`;
+
+      // Attributes
+      document.getElementById('attributes-list').innerHTML = Utils.buildAttributeBars(attrs);
+    };
+
+    // ─── Render Quests ────────────────────────────────────────────
+    const renderQuests = (questsList) => {
+      const container = document.getElementById('quests-list');
+      if (!questsList || questsList.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⚔</div>
+            <div class="empty-state-title">The Quest Board is Empty</div>
+            <p class="empty-state-desc">Your next adventure is waiting. Log an activity to generate quests.</p>
+            <a href="/pages/activity.html" class="btn btn-primary btn-sm mt-md">Log Activity</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = questsList.map(q => Utils.buildQuestCard(q)).join('');
+
+      // Attach complete handlers
+      container.querySelectorAll('.quest-complete-btn').forEach(btn => {
+        btn.addEventListener('click', handleQuestComplete);
+      });
+
+      // Attach delete handlers
+      container.querySelectorAll('.quest-delete-btn').forEach(btn => {
+        btn.addEventListener('click', handleQuestDelete);
+      });
+    };
+
+    // ─── Quest Completion ─────────────────────────────────────────
+    const handleQuestComplete = async (e) => {
+      const btn = e.currentTarget;
+      const questId = btn.dataset.questId;
+
+      if (btn.disabled || btn.dataset.completing) return;
+      btn.dataset.completing = true;
+      btn.classList.add('completing');
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        const result = await API.quests.complete(questId);
+
+        // Update character data
+        if (result.character) {
+          document.getElementById('char-level').textContent = result.character.level;
+          document.getElementById('char-gold').textContent = Utils.formatNumber(result.character.gold);
+          document.getElementById('streak-count').textContent = result.character.currentStreak;
+
+          const navGoldEl = document.querySelector('#nav-gold [data-gold]');
+          if (navGoldEl) navGoldEl.textContent = Utils.formatNumber(result.character.gold);
+
+          const navLevel = document.getElementById('nav-level');
+          if (navLevel) navLevel.textContent = `LV ${result.character.level}`;
+        }
+
+        // Run animation sequence
+        await QuestAnimation.animateQuestComplete(questId, result);
+
+        Utils.showToast(`⚔ Quest complete! +${result.rewards.xp} XP, +${result.rewards.gold} Gold`, 'success');
+
+      } catch (err) {
+        btn.classList.remove('completing');
+        delete btn.dataset.completing;
+        btn.innerHTML = 'Complete';
+        btn.disabled = false;
+
+        if (err.status === 409) {
+          Utils.showToast('Quest already completed!', 'info');
+        } else {
+          Utils.showToast(err.message || 'Quest completion failed. Please try again.', 'error');
+        }
+      }
+    };
+
+    // ─── Quest Delete ─────────────────────────────────────────────
+    const handleQuestDelete = async (e) => {
+      const btn = e.currentTarget;
+      const questId = btn.dataset.questId;
+      if (!confirm('Delete this quest?')) return;
+
+      try {
+        await API.quests.delete(questId);
+        const card = document.getElementById(`quest-card-${questId}`);
+        if (card) {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+          card.style.transition = 'all 0.3s ease';
+          setTimeout(() => card.remove(), 300);
+        }
+        Utils.showToast('Quest deleted', 'info');
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to delete quest', 'error');
+      }
+    };
+
+    // ─── Activity Summary ─────────────────────────────────────────
+    const renderActivitySummary = (summary) => {
+      const container = document.getElementById('activity-summary');
+      const categories = [
+        { label: 'Coding', key: 'codingMinutes', icon: '💻' },
+        { label: 'Study', key: 'studyMinutes', icon: '📚' },
+        { label: 'Fitness', key: 'fitnessMinutes', icon: '💪' },
+        { label: 'Entertainment', key: 'entertainmentMinutes', icon: '🎮' },
+        { label: 'Social', key: 'socialMinutes', icon: '🤝' },
+        { label: 'Work', key: 'workMinutes', icon: '💼' },
+        { label: 'Reading', key: 'readingMinutes', icon: '📖' },
+      ];
+
+      const active = categories.filter(c => summary?.[c.key] > 0);
+
+      if (active.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:var(--space-xl)">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">No Activity Logged Today</div>
+            <p class="empty-state-desc">Log your real-world activities to get personalized quests.</p>
+            <a href="/pages/activity.html" class="btn btn-primary btn-sm mt-md">Log Activity</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-sm)">
+          ${active.map(c => `
+            <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-md);text-align:center">
+              <div style="font-size:1.5rem">${c.icon}</div>
+              <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px">${c.label}</div>
+              <div style="font-weight:700;color:var(--text-primary);font-size:0.9rem">${Utils.formatMinutes(summary[c.key])}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    };
+
+    // ─── Achievements ─────────────────────────────────────────────
+    const renderAchievements = (achievementsList) => {
+      const unlocked = achievementsList.filter(a => a.unlocked).slice(0, 4);
+      const container = document.getElementById('achievements-list');
+
+      if (unlocked.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:var(--space-lg)">
+            <div class="empty-state-icon">🏆</div>
+            <p class="empty-state-desc">Complete quests to unlock achievements!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const ACHIEVEMENT_ICONS = {
+        QUEST_COUNT: '⚔', LEVEL: '⬆', STREAK: '🔥', LONGEST_STREAK: '🔥',
+        GOLD: '🪙', INTELLECT: '🧠', STRENGTH: '💪', DISCIPLINE: '🎯', TOTAL_XP: '⚡',
+      };
+
+      container.innerHTML = unlocked.map(a => `
+        <div class="achievement-card unlocked" style="margin-bottom:var(--space-sm)">
+          <div class="achievement-icon">${ACHIEVEMENT_ICONS[a.requirementType] || '🏆'}</div>
+          <div>
+            <div class="achievement-name">${a.name}</div>
+            <div class="achievement-desc">${a.description}</div>
+            <div class="achievement-unlocked-at">${Utils.formatDate(a.unlockedAt)}</div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // ─── Refresh missions ─────────────────────────────────────────
+    document.getElementById('refresh-missions-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('refresh-missions-btn');
+      btn.disabled = true;
+      btn.textContent = '↻ Loading...';
+      try {
+        const missions = await API.missions.today();
+        renderQuests(missions);
+      } catch (err) {
+        Utils.showToast('Failed to refresh quests', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '↻ Refresh';
+      }
+    });
+
+    // ─── Start ────────────────────────────────────────────────────
+    loadDashboard();
+  </script>
+</body>
+</html>

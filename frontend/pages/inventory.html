@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Inventory</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-lg);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h1 class="page-title">🎒 Inventory</h1>
+          <p class="page-subtitle">Your collected items. Equip to activate their effects.</p>
+        </div>
+        <a href="/pages/shop.html" class="btn btn-gold btn-sm">+ Visit Armory</a>
+      </div>
+
+      <div id="inventory-container">
+        <div class="loading-full">
+          <div class="spinner"></div>
+          <p class="text-muted">Loading inventory...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('inventory');
+
+    const ITEM_ICONS = { FRAME: '🖼', TITLE: '👑', THEME: '🎨', BADGE: '🏅', COSMETIC: '✨' };
+    let inventoryData = [];
+
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+      if (user.profile) document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+      loadInventory();
+    })();
+
+    const loadInventory = async () => {
+      const container = document.getElementById('inventory-container');
+      try {
+        inventoryData = await API.inventory.list();
+        renderInventory();
+      } catch (err) {
+        container.innerHTML = `
+          <div class="error-state"><p>Failed to load inventory.</p><button class="btn btn-primary btn-sm" onclick="loadInventory()">↻ Retry</button></div>
+        `;
+      }
+    };
+
+    const renderInventory = () => {
+      const container = document.getElementById('inventory-container');
+      if (!inventoryData || inventoryData.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🎒</div>
+            <div class="empty-state-title">Empty Inventory</div>
+            <p class="empty-state-desc">Visit the Armory to spend your Gold on frames, titles, themes, and cosmetics.</p>
+            <a href="/pages/shop.html" class="btn btn-gold mt-md">→ Visit Armory</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `<div class="inventory-grid">${inventoryData.map(inv => {
+        const item = inv.item || {};
+        const rarity = (item.rarity || 'COMMON').toLowerCase();
+        const icon = ITEM_ICONS[item.type] || '✨';
+
+        return `
+          <div class="inventory-item ${inv.equipped ? 'equipped' : ''}" id="inv-item-${inv.id}">
+            ${inv.equipped ? '<div class="equipped-badge">Equipped</div>' : ''}
+            <div style="text-align:center;font-size:2.5rem;padding:var(--space-sm)">${icon}</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:4px">
+                <span class="rarity-badge ${rarity}">${item.rarity}</span>
+                <span class="text-muted text-xs">${item.type}</span>
+              </div>
+              <div style="font-family:var(--font-display);font-size:0.9rem;margin-bottom:4px">${item.name}</div>
+              <p class="text-muted text-xs">${item.description}</p>
+            </div>
+            <div style="margin-top:auto;padding-top:var(--space-md)">
+              ${inv.equipped
+                ? `<button class="btn btn-ghost btn-sm btn-full unequip-btn" data-inv-id="${inv.id}" aria-label="Unequip ${item.name}">Unequip</button>`
+                : `<button class="btn btn-cyan btn-sm btn-full equip-btn" data-inv-id="${inv.id}" aria-label="Equip ${item.name}"
+                           style="background:var(--accent-cyan-glow);border:1px solid var(--border-panel);color:var(--accent-cyan)">Equip</button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('')}</div>`;
+
+      document.querySelectorAll('.equip-btn').forEach(btn => btn.addEventListener('click', handleEquip));
+      document.querySelectorAll('.unequip-btn').forEach(btn => btn.addEventListener('click', handleUnequip));
+    };
+
+    const handleEquip = async (e) => {
+      const invId = e.currentTarget.dataset.invId;
+      e.currentTarget.disabled = true;
+      try {
+        await API.inventory.equip(invId);
+        await loadInventory();
+        Utils.showToast('Item equipped!', 'success');
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to equip', 'error');
+        e.currentTarget.disabled = false;
+      }
+    };
+
+    const handleUnequip = async (e) => {
+      const invId = e.currentTarget.dataset.invId;
+      e.currentTarget.disabled = true;
+      try {
+        await API.inventory.unequip(invId);
+        await loadInventory();
+        Utils.showToast('Item unequipped', 'info');
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to unequip', 'error');
+        e.currentTarget.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>

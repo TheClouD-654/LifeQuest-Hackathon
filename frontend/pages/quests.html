@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Quest Board</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <div class="gold-display" id="nav-gold"><div class="gold-coin"></div><span data-gold>0</span></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md)">
+        <div>
+          <h1 class="page-title">⚔ Quest Board</h1>
+          <p class="page-subtitle">Complete quests to earn XP, Gold, and build your attributes.</p>
+        </div>
+        <button class="btn btn-primary" id="create-quest-btn" aria-label="Create custom quest">
+          + Create Quest
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist" aria-label="Quest filters">
+        <button class="tab-btn active" role="tab" aria-selected="true" data-tab="today" id="tab-today">Today's Quests</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="custom" id="tab-custom">My Custom Quests</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="completed" id="tab-completed">Completed</button>
+      </div>
+
+      <!-- Quest List -->
+      <div id="quests-container">
+        <div class="loading-full">
+          <div class="spinner"></div>
+          <p class="text-muted">Loading quests...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Quest Modal -->
+  <div id="create-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title" style="font-family:var(--font-display);letter-spacing:0.08em">Create Quest</h2>
+        <button class="modal-close" aria-label="Close modal" id="modal-close-btn">✕</button>
+      </div>
+
+      <form id="create-quest-form" novalidate>
+        <div id="create-error" class="form-error mb-md" style="display:none" role="alert"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="quest-title">Quest Title *</label>
+          <input type="text" id="quest-title" class="form-input" placeholder="e.g. Finish DSA assignment" maxlength="100" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="quest-desc">Description</label>
+          <textarea id="quest-desc" class="form-textarea" placeholder="What exactly are you going to do?" maxlength="500"></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+          <div class="form-group">
+            <label class="form-label" for="quest-category">Category</label>
+            <select id="quest-category" class="form-select">
+              <option value="CODING">💻 Coding</option>
+              <option value="STUDY">📚 Study</option>
+              <option value="FITNESS">💪 Fitness</option>
+              <option value="READING">📖 Reading</option>
+              <option value="WORK">💼 Work</option>
+              <option value="SOCIAL">🤝 Social</option>
+              <option value="OTHER" selected>⚡ Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="quest-difficulty">Difficulty</label>
+            <select id="quest-difficulty" class="form-select">
+              <option value="EASY">Easy (40–70 XP)</option>
+              <option value="MEDIUM" selected>Medium (70–120 XP)</option>
+              <option value="HARD">Hard (120–200 XP)</option>
+              <option value="EPIC">Epic (200+ XP)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="quest-due">Due Date (optional)</label>
+          <input type="date" id="quest-due" class="form-input">
+        </div>
+
+        <p class="text-muted text-xs mb-md">⚡ XP and Gold rewards are calculated server-side based on difficulty and your current level.</p>
+
+        <div style="display:flex;gap:var(--space-md)">
+          <button type="submit" class="btn btn-primary flex-1" id="create-submit">Create Quest</button>
+          <button type="button" class="btn btn-ghost" id="modal-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script src="../js/animations/questComplete.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('quests');
+
+    let activeTab = 'today';
+
+    // Auth check
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+      if (user.profile) {
+        document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+        const goldEl = document.querySelector('[data-gold]');
+        if (goldEl) goldEl.textContent = Utils.formatNumber(user.profile.gold);
+      }
+      loadQuests();
+    })();
+
+    // ─── Load quests ──────────────────────────────────────────────
+    const loadQuests = async () => {
+      const container = document.getElementById('quests-container');
+      container.innerHTML = '<div class="loading-full"><div class="spinner"></div><p class="text-muted">Loading...</p></div>';
+
+      try {
+        let questsList;
+        if (activeTab === 'today') {
+          questsList = await API.missions.today();
+        } else if (activeTab === 'custom') {
+          questsList = await API.quests.list({ type: 'CUSTOM' });
+          questsList = questsList.filter(q => q.status !== 'DELETED');
+        } else {
+          questsList = await API.quests.list({ status: 'COMPLETED' });
+        }
+
+        if (!questsList || questsList.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">⚔</div>
+              <div class="empty-state-title">${activeTab === 'today' ? 'No Quests Today' : activeTab === 'custom' ? 'No Custom Quests' : 'No Completed Quests'}</div>
+              <p class="empty-state-desc">${activeTab === 'today' ? 'Log an activity to generate your daily quests.' : 'Create your first custom quest!'}</p>
+              ${activeTab !== 'completed' ? '<button class="btn btn-primary btn-sm mt-md" onclick="document.getElementById(\'create-quest-btn\').click()">+ Create Quest</button>' : ''}
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `<div style="display:flex;flex-direction:column;gap:var(--space-md)">${questsList.map(q => Utils.buildQuestCard(q)).join('')}</div>`;
+
+        // Attach handlers
+        container.querySelectorAll('.quest-complete-btn').forEach(btn => {
+          btn.addEventListener('click', handleQuestComplete);
+        });
+        container.querySelectorAll('.quest-delete-btn').forEach(btn => {
+          btn.addEventListener('click', handleQuestDelete);
+        });
+
+      } catch (err) {
+        container.innerHTML = `
+          <div class="error-state">
+            <span style="font-size:2rem">⚠</span>
+            <p>${err.message || 'Failed to load quests'}</p>
+            <button class="btn btn-primary btn-sm" onclick="loadQuests()">↻ Try Again</button>
+          </div>
+        `;
+      }
+    };
+
+    // ─── Tab switching ────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        activeTab = btn.dataset.tab;
+        loadQuests();
+      });
+    });
+
+    // ─── Quest complete ───────────────────────────────────────────
+    const handleQuestComplete = async (e) => {
+      const btn = e.currentTarget;
+      const questId = btn.dataset.questId;
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0 auto"></div>';
+
+      try {
+        const result = await API.quests.complete(questId);
+        await QuestAnimation.animateQuestComplete(questId, result);
+        Utils.showToast(`⚔ Quest complete! +${result.rewards.xp} XP, +${result.rewards.gold} Gold`, 'success');
+        // Update gold in nav
+        if (result.character) {
+          const goldEl = document.querySelector('[data-gold]');
+          if (goldEl) goldEl.textContent = Utils.formatNumber(result.character.gold);
+          document.getElementById('nav-level').textContent = `LV ${result.character.level}`;
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Complete';
+        Utils.showToast(err.status === 409 ? 'Already completed!' : err.message || 'Failed to complete quest.', 'error');
+      }
+    };
+
+    // ─── Quest delete ─────────────────────────────────────────────
+    const handleQuestDelete = async (e) => {
+      const questId = e.currentTarget.dataset.questId;
+      if (!confirm('Delete this quest?')) return;
+      try {
+        await API.quests.delete(questId);
+        const card = document.getElementById(`quest-card-${questId}`);
+        if (card) { card.style.opacity = '0'; card.style.transform = 'scale(0.95)'; card.style.transition = '0.3s'; setTimeout(() => card.remove(), 300); }
+        Utils.showToast('Quest deleted', 'info');
+      } catch (err) { Utils.showToast(err.message || 'Failed to delete', 'error'); }
+    };
+
+    // ─── Modal ────────────────────────────────────────────────────
+    const openModal = () => {
+      document.getElementById('create-modal').style.display = 'flex';
+      document.getElementById('quest-title').focus();
+    };
+    const closeModal = () => {
+      document.getElementById('create-modal').style.display = 'none';
+      document.getElementById('create-quest-form').reset();
+      document.getElementById('create-error').style.display = 'none';
+    };
+
+    document.getElementById('create-quest-btn').addEventListener('click', openModal);
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('create-modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // ─── Create quest form ────────────────────────────────────────
+    document.getElementById('create-quest-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('create-error').style.display = 'none';
+
+      const title = document.getElementById('quest-title').value.trim();
+      if (!title) {
+        const err = document.getElementById('create-error');
+        err.style.display = 'flex';
+        err.textContent = '⚠ Quest title is required.';
+        return;
+      }
+
+      const btn = document.getElementById('create-submit');
+      btn._orig = btn.textContent;
+      btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px;margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        await API.quests.create({
+          title,
+          description: document.getElementById('quest-desc').value.trim(),
+          category: document.getElementById('quest-category').value,
+          difficulty: document.getElementById('quest-difficulty').value,
+          type: 'CUSTOM',
+          dueDate: document.getElementById('quest-due').value || undefined,
+        });
+        closeModal();
+        Utils.showToast('Quest created! Ready to conquer.', 'success');
+        // Switch to custom tab and reload
+        activeTab = 'custom';
+        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        document.getElementById('tab-custom').classList.add('active');
+        document.getElementById('tab-custom').setAttribute('aria-selected', 'true');
+        loadQuests();
+      } catch (err) {
+        const errEl = document.getElementById('create-error');
+        errEl.style.display = 'flex';
+        errEl.textContent = `⚠ ${err.message || 'Failed to create quest.'}`;
+        btn.textContent = btn._orig;
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

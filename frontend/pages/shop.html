@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Armory</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-lg);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <div class="gold-display" id="nav-gold"><div class="gold-coin"></div><span id="gold-display" data-gold>0</span></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md)">
+        <div>
+          <h1 class="page-title">🛡 Armory</h1>
+          <p class="page-subtitle">Spend your hard-earned Gold on cosmetics, titles, and themes.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-sm)">
+          <span class="text-muted text-sm">Your Gold:</span>
+          <div class="gold-display" style="font-size:1.2rem"><div class="gold-coin"></div><span id="player-gold">0</span></div>
+        </div>
+      </div>
+
+      <!-- Filter -->
+      <div class="tabs" role="tablist" aria-label="Item type filter" style="max-width:600px">
+        <button class="tab-btn active" role="tab" data-type="ALL">All Items</button>
+        <button class="tab-btn" role="tab" data-type="FRAME">Frames</button>
+        <button class="tab-btn" role="tab" data-type="TITLE">Titles</button>
+        <button class="tab-btn" role="tab" data-type="THEME">Themes</button>
+        <button class="tab-btn" role="tab" data-type="BADGE">Badges</button>
+        <button class="tab-btn" role="tab" data-type="COSMETIC">Cosmetics</button>
+      </div>
+
+      <!-- Items Grid -->
+      <div id="shop-grid" class="shop-grid">
+        <div class="skeleton" style="height:250px"></div>
+        <div class="skeleton" style="height:250px"></div>
+        <div class="skeleton" style="height:250px"></div>
+        <div class="skeleton" style="height:250px"></div>
+        <div class="skeleton" style="height:250px"></div>
+        <div class="skeleton" style="height:250px"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('shop');
+
+    const ITEM_ICONS = {
+      FRAME: '🖼', TITLE: '👑', THEME: '🎨', BADGE: '🏅', COSMETIC: '✨',
+    };
+
+    let allItems = [];
+    let currentFilter = 'ALL';
+    let playerGold = 0;
+
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+
+      if (user.profile) {
+        playerGold = user.profile.gold;
+        document.getElementById('player-gold').textContent = Utils.formatNumber(playerGold);
+        const navGoldEl = document.querySelector('[data-gold]');
+        if (navGoldEl) navGoldEl.textContent = Utils.formatNumber(playerGold);
+        document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+      }
+
+      try {
+        allItems = await API.shop.list();
+        renderShop();
+      } catch (err) {
+        document.getElementById('shop-grid').innerHTML = `
+          <div class="error-state" style="grid-column:1/-1">
+            <p>Failed to load shop items. <button class="btn btn-primary btn-sm" onclick="location.reload()">↻ Retry</button></p>
+          </div>
+        `;
+      }
+    })();
+
+    const renderShop = () => {
+      const filtered = currentFilter === 'ALL' ? allItems : allItems.filter(i => i.type === currentFilter);
+      const grid = document.getElementById('shop-grid');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🛡</div><p class="empty-state-desc">No items in this category.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        const rarity = (item.rarity || 'COMMON').toLowerCase();
+        const icon = ITEM_ICONS[item.type] || '✨';
+        const canAfford = playerGold >= item.price;
+
+        return `
+          <div class="shop-item-card ${rarity}" id="shop-item-${item.id}" data-item-id="${item.id}">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span class="rarity-badge ${rarity}">${item.rarity}</span>
+              <span class="text-muted text-xs">${item.type}</span>
+            </div>
+            <div class="shop-item-icon">${icon}</div>
+            <div class="shop-item-name">${item.name}</div>
+            <p class="shop-item-desc">${item.description}</p>
+            <div class="shop-item-footer">
+              <div class="shop-item-price">
+                <div class="gold-coin" style="width:14px;height:14px"></div>
+                ${Utils.formatNumber(item.price)}
+              </div>
+              ${item.owned
+                ? `<div class="shop-item-owned">✓ Owned</div>`
+                : `<button class="btn btn-gold btn-sm purchase-btn"
+                           data-item-id="${item.id}"
+                           data-item-name="${item.name}"
+                           ${!canAfford ? 'disabled title="Not enough gold"' : ''}
+                           aria-label="Purchase ${item.name} for ${item.price} gold"
+                           style="${!canAfford ? 'opacity:0.5;cursor:not-allowed' : ''}">
+                     Buy
+                   </button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach purchase handlers
+      grid.querySelectorAll('.purchase-btn').forEach(btn => {
+        btn.addEventListener('click', handlePurchase);
+      });
+    };
+
+    // ─── Purchase Handler (server authoritative) ──────────────────
+    const handlePurchase = async (e) => {
+      const btn = e.currentTarget;
+      const itemId = btn.dataset.itemId;
+      const itemName = btn.dataset.itemName;
+
+      if (btn.disabled) return;
+      if (!confirm(`Purchase ${itemName}?`)) return;
+
+      btn.disabled = true;
+      btn._orig = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
+
+      try {
+        const result = await API.shop.purchase(itemId);
+
+        // Animate card
+        const card = document.getElementById(`shop-item-${itemId}`);
+        if (card) card.classList.add('purchasing');
+
+        // Update local gold
+        playerGold = result.newGold;
+        document.getElementById('player-gold').textContent = Utils.formatNumber(playerGold);
+        const navGoldEl = document.querySelector('[data-gold]');
+        if (navGoldEl) navGoldEl.textContent = Utils.formatNumber(playerGold);
+
+        // Update item in list
+        const item = allItems.find(i => i.id === itemId);
+        if (item) item.owned = true;
+
+        Utils.showToast(`🎉 ${result.item.name} acquired!`, 'success', 5000);
+        renderShop();
+
+      } catch (err) {
+        btn.innerHTML = btn._orig;
+        btn.disabled = false;
+        Utils.showToast(err.message || 'Purchase failed. Your gold is safe.', 'error');
+      }
+    };
+
+    // ─── Tab filter ───────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        currentFilter = btn.dataset.type;
+        renderShop();
+      });
+    });
+  </script>
+</body>
+</html>

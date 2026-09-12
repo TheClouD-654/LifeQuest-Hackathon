@@ -1,0 +1,339 @@
+/* ============================================================
+   LIFE RPG — Animations
+   Quest completion, level-up, XP popup, particles
+   ============================================================ */
+
+/* ─── Quest Completion Animation ─────────────────────────────── */
+@keyframes quest-complete-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  30%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.3); }
+  60%  { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.quest-card.completing {
+  animation: quest-complete-glow 0.8s ease-out;
+}
+
+@keyframes check-appear {
+  0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.quest-check-icon {
+  animation: check-appear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* ─── XP / Reward Popup ──────────────────────────────────────── */
+.reward-popup {
+  position: fixed;
+  pointer-events: none;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.reward-popup-line {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  animation: popup-float 1.8s ease-out forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.reward-popup-line.xp    { color: var(--accent-cyan); font-size: 1.3rem; }
+.reward-popup-line.gold  { color: var(--accent-gold); }
+.reward-popup-line.attr  { color: var(--accent-purple); font-size: 0.9rem; }
+
+@keyframes popup-float {
+  0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+  20%  { opacity: 1; transform: translateY(-10px) scale(1.1); }
+  80%  { opacity: 1; transform: translateY(-60px) scale(1); }
+  100% { opacity: 0; transform: translateY(-90px) scale(0.9); }
+}
+
+/* ─── Level Up Overlay ───────────────────────────────────────── */
+.level-up-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 5, 8, 0.92);
+  backdrop-filter: blur(12px);
+  animation: overlay-fade-in 0.3s ease;
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.level-up-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  animation: level-up-appear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes level-up-appear {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.level-up-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  animation: pulse-glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+  to   { text-shadow: 0 0 30px rgba(255, 215, 0, 0.9), 0 0 60px rgba(255, 215, 0, 0.3); }
+}
+
+.level-up-number {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 15vw, 9rem);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--accent-gold), #fff, var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: level-bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s both;
+}
+
+@keyframes level-bounce {
+  0%   { transform: scale(0.3); }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.level-up-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+}
+
+.level-up-unlocked {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-xl);
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.level-up-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.level-up-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: particle-burst var(--duration, 1.2s) ease-out var(--delay, 0s) forwards;
+}
+
+@keyframes particle-burst {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx, 0), var(--ty, -200px)) scale(0); opacity: 0; }
+}
+
+/* ─── XP Bar Fill Animation ──────────────────────────────────── */
+@keyframes xp-bar-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 212, 255, 0.4); }
+  50%       { box-shadow: 0 0 20px rgba(0, 212, 255, 0.8), 0 0 40px rgba(0, 212, 255, 0.2); }
+}
+
+.xp-bar-fill.animating {
+  animation: xp-shimmer 2s infinite, xp-bar-pulse 1s ease-in-out 3;
+}
+
+/* ─── Shop Purchase Animation ────────────────────────────────── */
+@keyframes purchase-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+  30%  { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.shop-item-card.purchasing {
+  animation: purchase-flash 0.6s ease-out;
+}
+
+/* ─── Card Hover Glow ─────────────────────────────────────────── */
+@keyframes card-glow-pulse {
+  0%, 100% { border-color: var(--border-panel); }
+  50% { border-color: var(--border-glow); }
+}
+
+/* ─── Streak Fire Pulse ──────────────────────────────────────── */
+@keyframes streak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.streak-active .streak-fire {
+  animation: streak-pulse 1.5s ease-in-out infinite, flicker 2s infinite alternate;
+}
+
+/* ─── Number Count Up ─────────────────────────────────────────── */
+.count-up {
+  display: inline-block;
+}
+
+/* ─── Ripple Effect ───────────────────────────────────────────── */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0);
+  animation: ripple-expand 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-expand {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ─── Page Transition ─────────────────────────────────────────── */
+.page-enter {
+  animation: page-fade-in 0.3s ease;
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Achievement Unlock Toast ───────────────────────────────── */
+.achievement-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  animation: achievement-slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes achievement-slide-in {
+  from { opacity: 0; transform: translateX(100%) scale(0.8); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ─── Floating Action Button ─────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(0, 212, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  z-index: var(--z-above);
+}
+.fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+}
+
+/* ─── Glow Text ───────────────────────────────────────────────── */
+.glow-cyan   { text-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+.glow-gold   { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+.glow-purple { text-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+
+/* ─── Landing Page Specific ──────────────────────────────────── */
+.hero-glow {
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  pointer-events: none;
+}
+
+@keyframes hero-pulse {
+  0%, 100% { opacity: 0.06; transform: scale(1); }
+  50% { opacity: 0.12; transform: scale(1.02); }
+}
+
+.hero-bg-glow {
+  animation: hero-pulse 4s ease-in-out infinite;
+}
+
+/* ─── Loading Spinner ─────────────────────────────────────────── */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-full {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: var(--space-lg);
+}
+
+.loading-full .spinner {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+}
+
+/* ─── Scanning Line Effect ───────────────────────────────────── */
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  animation: scan 3s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes scan {
+  from { top: 0; }
+  to { top: 100%; }
+}

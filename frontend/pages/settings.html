@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Settings</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container" style="max-width:700px">
+      <div class="page-header">
+        <h1 class="page-title">⚙ Settings</h1>
+        <p class="page-subtitle">Manage your account and preferences.</p>
+      </div>
+
+      <!-- Account Info -->
+      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Account information">
+        <div class="section-title">Account</div>
+        <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg)">
+          <div id="settings-avatar" style="width:60px;height:60px;border-radius:50%;background:var(--bg-elevated);border:2px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:1.8rem">🧙</div>
+          <div>
+            <div id="settings-username" style="font-family:var(--font-display);font-size:1.1rem"></div>
+            <div id="settings-email" class="text-muted text-sm"></div>
+            <div id="settings-class" class="text-sm text-cyan" style="margin-top:2px"></div>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" id="logout-btn" aria-label="Log out of your account">
+          Log Out
+        </button>
+      </div>
+
+      <!-- Profile Settings -->
+      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Profile settings">
+        <div class="section-title">Update Profile</div>
+        <form id="profile-form" novalidate>
+          <div id="profile-error" class="form-error mb-md" style="display:none" role="alert"></div>
+          <div id="profile-success" class="mb-md" style="display:none;color:var(--diff-easy);font-size:0.875rem" role="status"></div>
+
+          <div class="form-group">
+            <label class="form-label" for="pref-username">Display Name</label>
+            <input type="text" id="pref-username" class="form-input" maxlength="20" minlength="2">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pref-title">Custom Title</label>
+            <input type="text" id="pref-title" class="form-input" placeholder="e.g. The Relentless" maxlength="40">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+        </form>
+      </div>
+
+      <!-- Goals Update -->
+      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Goals settings">
+        <div class="section-title">Update Goals</div>
+        <p class="text-muted text-sm mb-md">These guide your daily quest generation.</p>
+
+        <div id="goals-grid" class="goals-grid" style="display:flex;flex-wrap:wrap;gap:var(--space-sm)" role="group" aria-label="Goal selection">
+          <div class="goal-chip" data-goal="CODING" role="checkbox" tabindex="0">💻 Coding</div>
+          <div class="goal-chip" data-goal="STUDY" role="checkbox" tabindex="0">📚 Study</div>
+          <div class="goal-chip" data-goal="FITNESS" role="checkbox" tabindex="0">💪 Fitness</div>
+          <div class="goal-chip" data-goal="READING" role="checkbox" tabindex="0">📖 Reading</div>
+          <div class="goal-chip" data-goal="PRODUCTIVITY" role="checkbox" tabindex="0">⚡ Productivity</div>
+          <div class="goal-chip" data-goal="SOCIAL" role="checkbox" tabindex="0">🤝 Social</div>
+          <div class="goal-chip" data-goal="DISCIPLINE" role="checkbox" tabindex="0">🎯 Discipline</div>
+          <div class="goal-chip" data-goal="BALANCE" role="checkbox" tabindex="0">⚖️ Balance</div>
+        </div>
+
+        <button class="btn btn-primary btn-sm mt-lg" id="save-goals-btn">Save Goals</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="panel" style="border-color:rgba(239,68,68,0.2)" aria-label="Danger zone">
+        <div class="section-title" style="color:var(--diff-hard)">Danger Zone</div>
+        <p class="text-muted text-sm mb-md">These actions cannot be undone.</p>
+        <button class="btn btn-danger btn-sm" id="delete-account-btn" aria-label="Delete account permanently">
+          🗑 Delete Account
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('settings');
+
+    const AVATAR_EMOJIS = { scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️', mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙' };
+    const CLASS_LABELS = { SCHOLAR: '📚 Scholar', WARRIOR: '⚔️ Warrior', GUARDIAN: '🛡️ Guardian', ROGUE: '🗡️ Rogue' };
+
+    let selectedGoals = new Set();
+    let settingsData = null;
+
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+
+      settingsData = user;
+      renderSettings(user);
+
+      if (user.profile) {
+        document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+      }
+    })();
+
+    const renderSettings = (user) => {
+      const profile = user.profile || {};
+      const settings = user.settings || {};
+
+      document.getElementById('settings-avatar').textContent = AVATAR_EMOJIS[profile.avatar] || '🧙';
+      document.getElementById('settings-username').textContent = profile.username || user.email;
+      document.getElementById('settings-email').textContent = user.email;
+      document.getElementById('settings-class').textContent = CLASS_LABELS[profile.class] || '';
+
+      document.getElementById('pref-username').value = profile.username || '';
+      document.getElementById('pref-title').value = profile.title || '';
+
+      // Goals
+      if (settings.goals) {
+        selectedGoals = new Set(settings.goals.split(','));
+        document.querySelectorAll('.goal-chip').forEach(chip => {
+          if (selectedGoals.has(chip.dataset.goal)) {
+            chip.classList.add('selected');
+            chip.setAttribute('aria-checked', 'true');
+          }
+        });
+      }
+    };
+
+    // Goal chips
+    document.querySelectorAll('.goal-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const goal = chip.dataset.goal;
+        if (selectedGoals.has(goal)) {
+          if (selectedGoals.size > 1) {
+            selectedGoals.delete(goal);
+            chip.classList.remove('selected');
+            chip.setAttribute('aria-checked', 'false');
+          }
+        } else {
+          selectedGoals.add(goal);
+          chip.classList.add('selected');
+          chip.setAttribute('aria-checked', 'true');
+        }
+      });
+      chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); } });
+    });
+
+    // Profile form
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('profile-error').style.display = 'none';
+      document.getElementById('profile-success').style.display = 'none';
+
+      const username = document.getElementById('pref-username').value.trim();
+      const title = document.getElementById('pref-title').value.trim();
+
+      if (username && username.length < 2) {
+        const err = document.getElementById('profile-error');
+        err.style.display = 'flex';
+        err.textContent = '⚠ Username must be at least 2 characters.';
+        return;
+      }
+
+      const btn = document.getElementById('save-profile-btn');
+      btn._orig = btn.textContent;
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        const updates = {};
+        if (username) updates.username = username;
+        if (title) updates.title = title;
+
+        await API.profile.update(updates);
+
+        document.getElementById('profile-success').style.display = 'block';
+        document.getElementById('profile-success').textContent = '✓ Profile updated successfully!';
+        if (username) document.getElementById('settings-username').textContent = username;
+        Utils.showToast('Profile updated!', 'success');
+      } catch (err) {
+        const errEl = document.getElementById('profile-error');
+        errEl.style.display = 'flex';
+        errEl.textContent = `⚠ ${err.message || 'Failed to update profile.'}`;
+      } finally {
+        btn.textContent = btn._orig;
+        btn.disabled = false;
+      }
+    });
+
+    // Save goals
+    document.getElementById('save-goals-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-goals-btn');
+      btn._orig = btn.textContent;
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        await API.profile.update({ goals: Array.from(selectedGoals) });
+        Utils.showToast('Goals saved! New quests will reflect your goals.', 'success');
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to save goals', 'error');
+      } finally {
+        btn.textContent = btn._orig;
+        btn.disabled = false;
+      }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+        await API.auth.logout();
+        window.location.href = '/';
+      } catch {
+        window.location.href = '/';
+      }
+    });
+
+    // Delete account
+    document.getElementById('delete-account-btn').addEventListener('click', async () => {
+      const confirmed = confirm('⚠ Are you SURE you want to delete your account? This cannot be undone. All your progress will be lost.');
+      if (!confirmed) return;
+      const doubleConfirm = confirm('This will permanently delete your character, quests, and progress. Continue?');
+      if (!doubleConfirm) return;
+
+      // Could implement DELETE /api/auth/account here
+      Utils.showToast('Account deletion: please contact support.', 'warning', 6000);
+    });
+  </script>
+</body>
+</html>

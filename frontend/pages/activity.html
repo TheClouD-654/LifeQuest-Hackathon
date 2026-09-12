@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG — Activity Log</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">⚔ LIFE RPG</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <span class="nav-level" id="nav-level">LV 1</span>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">📈 Activity Log</h1>
+        <p class="page-subtitle">Record your real-world activities to generate personalized quests.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:380px 1fr;gap:var(--space-lg);align-items:start">
+
+        <!-- Log Form -->
+        <div class="panel" aria-label="Log new activity">
+          <div class="section-title">Log Activity</div>
+          <form id="activity-form" novalidate>
+            <div id="activity-error" class="form-error mb-md" style="display:none" role="alert"></div>
+
+            <div class="form-group">
+              <label class="form-label" for="act-category">Category *</label>
+              <select id="act-category" class="form-select" required aria-required="true">
+                <option value="CODING">💻 Coding</option>
+                <option value="STUDY">📚 Study</option>
+                <option value="FITNESS">💪 Fitness</option>
+                <option value="READING">📖 Reading</option>
+                <option value="WORK">💼 Work</option>
+                <option value="ENTERTAINMENT">🎮 Entertainment</option>
+                <option value="SOCIAL">🤝 Social</option>
+                <option value="OTHER">⚡ Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="act-duration">Duration (minutes) *</label>
+              <input type="number" id="act-duration" class="form-input" placeholder="e.g. 45" min="1" max="1440" required aria-required="true">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="act-desc">Description (optional)</label>
+              <textarea id="act-desc" class="form-textarea" placeholder="e.g. Worked on hackathon project" maxlength="255"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="log-btn">
+              📊 Log Activity
+            </button>
+          </form>
+
+          <!-- Insights -->
+          <div id="insights-container" style="margin-top:var(--space-lg)"></div>
+        </div>
+
+        <!-- Right Panel -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-lg)">
+
+          <!-- Today's Summary -->
+          <div class="panel" aria-label="Today's activity summary">
+            <div class="section-title">Today's Summary</div>
+            <div id="daily-summary">
+              <div class="loading-full" style="min-height:150px">
+                <div class="spinner"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7-Day View -->
+          <div class="panel" aria-label="7-day activity breakdown">
+            <div class="section-title">Last 7 Days</div>
+            <div id="weekly-summary">
+              <div class="loading-full" style="min-height:100px"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+          <!-- Recent Logs -->
+          <div class="panel" aria-label="Recent activity logs">
+            <div class="section-title">Recent Activity</div>
+            <div id="recent-logs">
+              <div class="loading-full" style="min-height:100px"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+  <div class="offline-banner" role="alert">📡 You are offline.</div>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('activity');
+
+    (async () => {
+      const user = await Utils.checkProfileOrRedirect();
+      if (!user) return;
+      if (user.profile) document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+      loadData();
+    })();
+
+    const loadData = async () => {
+      try {
+        const [daily, summary, logs] = await Promise.all([
+          API.activity.daily(),
+          API.activity.summary(),
+          API.activity.list({ limit: 20 }),
+        ]);
+        renderDailySummary(daily);
+        renderWeeklySummary(summary);
+        renderRecentLogs(logs);
+      } catch (err) {
+        Utils.showToast('Failed to load activity data', 'error');
+      }
+    };
+
+    const CATEGORY_COLORS = {
+      CODING: '#60a5fa', STUDY: '#a78bfa', FITNESS: '#f87171', READING: '#4ade80',
+      ENTERTAINMENT: '#f59e0b', SOCIAL: '#fb923c', WORK: '#00d4ff', OTHER: '#94a3b8',
+    };
+
+    const renderDailySummary = (summary) => {
+      const cats = [
+        { label: 'Coding', key: 'codingMinutes', icon: '💻', cat: 'CODING' },
+        { label: 'Study', key: 'studyMinutes', icon: '📚', cat: 'STUDY' },
+        { label: 'Fitness', key: 'fitnessMinutes', icon: '💪', cat: 'FITNESS' },
+        { label: 'Reading', key: 'readingMinutes', icon: '📖', cat: 'READING' },
+        { label: 'Work', key: 'workMinutes', icon: '💼', cat: 'WORK' },
+        { label: 'Entertainment', key: 'entertainmentMinutes', icon: '🎮', cat: 'ENTERTAINMENT' },
+        { label: 'Social', key: 'socialMinutes', icon: '🤝', cat: 'SOCIAL' },
+        { label: 'Other', key: 'otherMinutes', icon: '⚡', cat: 'OTHER' },
+      ];
+
+      const total = cats.reduce((s, c) => s + (summary?.[c.key] || 0), 0);
+      const active = cats.filter(c => (summary?.[c.key] || 0) > 0);
+
+      if (active.length === 0) {
+        document.getElementById('daily-summary').innerHTML = `
+          <div class="empty-state" style="padding:var(--space-lg)">
+            <div class="empty-state-icon">📊</div>
+            <p class="empty-state-desc">No activity logged today yet. Use the form to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('daily-summary').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:var(--space-sm);margin-bottom:var(--space-md)">
+          ${active.map(c => {
+            const mins = summary[c.key] || 0;
+            const pct = total > 0 ? Math.round((mins / total) * 100) : 0;
+            return `
+              <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-md);text-align:center;border-top:3px solid ${CATEGORY_COLORS[c.cat]}">
+                <div style="font-size:1.4rem">${c.icon}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">${c.label}</div>
+                <div style="font-weight:700;color:var(--text-primary)">${Utils.formatMinutes(mins)}</div>
+                <div style="font-size:0.7rem;color:var(--text-secondary)">${pct}%</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <p class="text-muted text-sm text-center">Total: ${Utils.formatMinutes(total)} logged today</p>
+      `;
+    };
+
+    const renderWeeklySummary = (summaries) => {
+      if (!summaries || summaries.length === 0) {
+        document.getElementById('weekly-summary').innerHTML = `<p class="text-muted text-sm">No activity logged in the last 7 days.</p>`;
+        return;
+      }
+
+      document.getElementById('weekly-summary').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          ${summaries.map(s => {
+            const total = (s.codingMinutes||0) + (s.studyMinutes||0) + (s.fitnessMinutes||0) + (s.entertainmentMinutes||0) + (s.socialMinutes||0);
+            return `
+              <div style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid var(--border-subtle)">
+                <span style="font-size:0.8rem;color:var(--text-secondary);min-width:80px">${Utils.formatDate(s.date)}</span>
+                <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+                  <div style="height:100%;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));border-radius:4px;width:${Math.min(total/480*100,100)}%"></div>
+                </div>
+                <span style="font-size:0.8rem;font-weight:600;color:var(--text-primary);min-width:60px;text-align:right">${Utils.formatMinutes(total)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    };
+
+    const renderRecentLogs = (logs) => {
+      if (!logs || logs.length === 0) {
+        document.getElementById('recent-logs').innerHTML = `<p class="text-muted text-sm">No activity logged yet.</p>`;
+        return;
+      }
+
+      document.getElementById('recent-logs').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          ${logs.map(log => `
+            <div class="activity-log-item">
+              <span class="activity-category-badge ${log.category}">${log.category}</span>
+              <div style="flex:1">
+                <div style="font-size:0.875rem;color:var(--text-primary)">${log.description || log.category.toLowerCase()}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">${Utils.formatDate(log.date)}</div>
+              </div>
+              <span style="font-weight:700;color:var(--text-secondary);font-size:0.875rem">${Utils.formatMinutes(log.durationMinutes)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    };
+
+    // ─── Log Activity Form ────────────────────────────────────────
+    document.getElementById('activity-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('activity-error').style.display = 'none';
+
+      const category = document.getElementById('act-category').value;
+      const duration = parseInt(document.getElementById('act-duration').value);
+      const description = document.getElementById('act-desc').value.trim();
+
+      if (!duration || duration < 1 || duration > 1440) {
+        const err = document.getElementById('activity-error');
+        err.style.display = 'flex';
+        err.textContent = '⚠ Duration must be between 1 and 1440 minutes.';
+        return;
+      }
+
+      const btn = document.getElementById('log-btn');
+      btn._orig = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px;margin:0 auto"></div>';
+      btn.disabled = true;
+
+      try {
+        const result = await API.activity.log({ category, durationMinutes: duration, description });
+        document.getElementById('activity-form').reset();
+
+        // Show insights
+        const insights = result.insights || [];
+        const container = document.getElementById('insights-container');
+        if (insights.length > 0) {
+          container.innerHTML = `
+            <div class="section-title" style="font-size:0.65rem">System Insight</div>
+            ${insights.map(i => `<div class="insight-card ${i.type}" style="margin-bottom:var(--space-sm)">${i.message}</div>`).join('')}
+          `;
+        } else {
+          container.innerHTML = '';
+        }
+
+        Utils.showToast(`✓ ${category} activity logged — ${Utils.formatMinutes(duration)}`, 'success');
+        loadData(); // Refresh
+
+      } catch (err) {
+        const errEl = document.getElementById('activity-error');
+        errEl.style.display = 'flex';
+        errEl.textContent = `⚠ ${err.message || 'Failed to log activity.'}`;
+        btn.innerHTML = btn._orig;
+        btn.disabled = false;
+      } finally {
+        if (!btn.disabled) { btn.innerHTML = btn._orig; btn.disabled = false; }
+        btn.innerHTML = btn._orig;
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
