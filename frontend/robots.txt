@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /pages/dashboard.html
+Disallow: /pages/quests.html
+Disallow: /pages/activity.html
+Disallow: /pages/character.html
+Disallow: /pages/shop.html
+Disallow: /pages/inventory.html
+Disallow: /pages/stats.html
+Disallow: /pages/settings.html
+
+Sitemap: https://lifequest-pzxa.onrender.com/sitemap.xml

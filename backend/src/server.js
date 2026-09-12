@@ -169,9 +169,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ─── 404 Handler for API routes ───────────────────────────────────────────────
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API route not found' });
+// ─── SEO & OG Asset Endpoints with strict MIME types ─────────────────────────
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').sendFile(path.join(frontendPath, 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml').sendFile(path.join(frontendPath, 'sitemap.xml'));
+});
+
+app.get('/assets/og-image.png', (req, res) => {
+  res.type('image/png').sendFile(path.join(frontendPath, 'assets/og-image.png'));
 });
 
 // Fallback to index.html for root / unknown client-side routes

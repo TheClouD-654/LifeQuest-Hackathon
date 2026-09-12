@@ -81,14 +81,14 @@
         <p class="text-muted text-sm mb-md">These guide your daily quest generation.</p>
 
         <div id="goals-grid" class="goals-grid" style="display:flex;flex-wrap:wrap;gap:var(--space-sm)" role="group" aria-label="Goal selection">
-          <div class="goal-chip" data-goal="CODING" role="checkbox" tabindex="0">💻 Coding</div>
-          <div class="goal-chip" data-goal="STUDY" role="checkbox" tabindex="0">📚 Study</div>
-          <div class="goal-chip" data-goal="FITNESS" role="checkbox" tabindex="0">💪 Fitness</div>
-          <div class="goal-chip" data-goal="READING" role="checkbox" tabindex="0">📖 Reading</div>
-          <div class="goal-chip" data-goal="PRODUCTIVITY" role="checkbox" tabindex="0">⚡ Productivity</div>
-          <div class="goal-chip" data-goal="SOCIAL" role="checkbox" tabindex="0">🤝 Social</div>
-          <div class="goal-chip" data-goal="DISCIPLINE" role="checkbox" tabindex="0">🎯 Discipline</div>
-          <div class="goal-chip" data-goal="BALANCE" role="checkbox" tabindex="0">⚖️ Balance</div>
+          <div class="goal-chip" data-goal="CODING" role="checkbox" aria-checked="false" tabindex="0">💻 Coding</div>
+          <div class="goal-chip" data-goal="STUDY" role="checkbox" aria-checked="false" tabindex="0">📚 Study</div>
+          <div class="goal-chip" data-goal="FITNESS" role="checkbox" aria-checked="false" tabindex="0">💪 Fitness</div>
+          <div class="goal-chip" data-goal="READING" role="checkbox" aria-checked="false" tabindex="0">📖 Reading</div>
+          <div class="goal-chip" data-goal="PRODUCTIVITY" role="checkbox" aria-checked="false" tabindex="0">⚡ Productivity</div>
+          <div class="goal-chip" data-goal="SOCIAL" role="checkbox" aria-checked="false" tabindex="0">🤝 Social</div>
+          <div class="goal-chip" data-goal="DISCIPLINE" role="checkbox" aria-checked="false" tabindex="0">🎯 Discipline</div>
+          <div class="goal-chip" data-goal="BALANCE" role="checkbox" aria-checked="false" tabindex="0">⚖️ Balance</div>
         </div>
 
         <button class="btn btn-primary btn-sm mt-lg" id="save-goals-btn">Save Goals</button>
@@ -148,10 +148,14 @@
       if (settings.goals) {
         selectedGoals = new Set(settings.goals.split(','));
         document.querySelectorAll('.goal-chip').forEach(chip => {
-          if (selectedGoals.has(chip.dataset.goal)) {
-            chip.classList.add('selected');
-            chip.setAttribute('aria-checked', 'true');
-          }
+          const isSelected = selectedGoals.has(chip.dataset.goal);
+          chip.classList.toggle('selected', isSelected);
+          chip.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        });
+      } else {
+        document.querySelectorAll('.goal-chip').forEach(chip => {
+          chip.classList.remove('selected');
+          chip.setAttribute('aria-checked', 'false');
         });
       }
     };

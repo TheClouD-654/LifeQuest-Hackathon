@@ -71,9 +71,9 @@
           </div>
 
           <div class="tabs" role="tablist" aria-label="Achievement filter">
-            <button class="tab-btn active" role="tab" data-ach-tab="all">All</button>
-            <button class="tab-btn" role="tab" data-ach-tab="unlocked">Unlocked</button>
-            <button class="tab-btn" role="tab" data-ach-tab="locked">Locked</button>
+            <button class="tab-btn active" role="tab" aria-selected="true" data-ach-tab="all">All</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-ach-tab="unlocked">Unlocked</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-ach-tab="locked">Locked</button>
           </div>
 
           <div id="achievements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-md)"></div>
