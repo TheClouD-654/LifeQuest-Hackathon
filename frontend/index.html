@@ -344,9 +344,14 @@
   <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="container nav-inner">
       <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
-      <div style="display:flex;align-items:center;gap:var(--space-md)">
-        <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-sm">Log In</a>
-        <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-sm">Start Journey</a>
+      <div id="nav-auth-slot" class="nav-auth-slot" aria-live="polite">
+        <div class="nav-auth-skeleton" aria-hidden="true" title="Checking session..."></div>
+        <noscript>
+          <div class="nav-auth-buttons">
+            <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-sm">Log In</a>
+            <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-sm">Start Journey</a>
+          </div>
+        </noscript>
       </div>
     </div>
   </nav>
@@ -596,21 +601,16 @@
 
   <script src="js/api/api.js"></script>
   <script src="js/utils/helpers.js"></script>
+  <script src="js/components/headerAuth.js"></script>
   <script>
     // Init particles
     Utils.initParticles();
 
-    // Check if already logged in
-    (async () => {
-      try {
-        const user = await API.auth.me();
-        if (user && user.profile) {
-          // Replace CTAs with dashboard link
-          document.getElementById('hero-cta-start').textContent = '→ Go to Dashboard';
-          document.getElementById('hero-cta-start').href = '/pages/dashboard.html';
-        }
-      } catch {}
-    })();
+    // Init Header Auth state with loading skeleton & RPG profile control
+    HeaderAuth.init({
+      containerId: 'nav-auth-slot',
+      heroCtaId: 'hero-cta-start',
+    });
   </script>
 </body>
 </html>

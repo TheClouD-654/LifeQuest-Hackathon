@@ -94,14 +94,30 @@ router.post('/login', loginValidation, (req, res, next) => {
 });
 
 // ─── POST /api/auth/logout ────────────────────────────────────────────────────
-router.post('/logout', requireAuth, (req, res) => {
-  req.logout((err) => {
-    if (err) return res.status(500).json({ error: 'Logout failed' });
-    req.session.destroy(() => {
-      res.clearCookie('life_rpg_session');
-      res.json({ message: 'Logged out successfully' });
+router.post('/logout', (req, res) => {
+  const finalizeLogout = () => {
+    res.clearCookie('lifequest_session');
+    res.clearCookie('life_rpg_session');
+    return res.json({ message: 'Logged out successfully' });
+  };
+
+  if (typeof req.logout === 'function') {
+    req.logout((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      if (req.session) {
+        req.session.destroy(() => finalizeLogout());
+      } else {
+        finalizeLogout();
+      }
     });
-  });
+  } else if (req.session) {
+    req.session.destroy(() => finalizeLogout());
+  } else {
+    finalizeLogout();
+  }
 });
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
@@ -120,6 +136,14 @@ router.get('/me', requireAuth, async (req, res) => {
       email: user.email,
       hasGoogleAuth: !!user.googleId,
       profile: user.profile,
+      character: user.profile ? {
+        name: user.profile.username,
+        level: user.profile.level,
+        class: user.profile.class,
+        gold: user.profile.gold,
+        avatar: user.profile.avatar,
+        title: user.profile.title,
+      } : null,
       attributes: user.attributes,
       settings: user.settings,
       needsProfile: !user.profile,
