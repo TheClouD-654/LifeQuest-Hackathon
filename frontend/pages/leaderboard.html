@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Quest — Hall of Champions</title>
+  <meta name="description" content="See how you rank against adventurers worldwide in the Life Quest Hall of Champions.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    body { padding-bottom: var(--space-3xl); }
+
+    .lb-main { padding: var(--space-xl) 0; }
+
+    /* ── Page Header ────────────────────────── */
+    .lb-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+    .lb-header h1 {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #ffe066 50%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .lb-header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+    .lb-total-badge {
+      display: inline-block;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-full);
+      padding: var(--space-xs) var(--space-lg);
+      color: var(--text-accent);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: var(--space-md);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Sort Tabs ──────────────────────────── */
+    .lb-sort-bar {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+    }
+    .lb-sort-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-md);
+      padding: var(--space-xs) var(--space-lg);
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .lb-sort-btn:hover {
+      border-color: var(--accent-cyan-dim);
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+    }
+    .lb-sort-btn.active {
+      background: rgba(0, 212, 255, 0.1);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 12px var(--accent-cyan-glow);
+    }
+
+    /* ── Podium ─────────────────────────────── */
+    .lb-podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+      min-height: 320px;
+    }
+    .lb-podium-card {
+      position: relative;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl) var(--space-lg) var(--space-lg);
+      text-align: center;
+      width: 220px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: slideUp 0.6s ease-out both;
+    }
+    .lb-podium-card:hover {
+      transform: translateY(-6px);
+    }
+
+    /* Rank-specific styling */
+    .lb-podium-card[data-rank="1"] {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.15), 0 8px 32px rgba(0,0,0,0.3);
+      animation-delay: 0.2s;
+      order: 2;
+      min-height: 280px;
+    }
+    .lb-podium-card[data-rank="2"] {
+      border-color: #c0c0c0;
+      box-shadow: 0 0 20px rgba(192, 192, 192, 0.1), 0 4px 24px rgba(0,0,0,0.3);
+      animation-delay: 0.1s;
+      order: 1;
+      min-height: 240px;
+    }
+    .lb-podium-card[data-rank="3"] {
+      border-color: #cd7f32;
+      box-shadow: 0 0 20px rgba(205, 127, 50, 0.1), 0 4px 24px rgba(0,0,0,0.3);
+      animation-delay: 0.3s;
+      order: 3;
+      min-height: 210px;
+    }
+
+    .lb-podium-crown {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    }
+    .lb-podium-rank {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: var(--space-xs);
+    }
+    .lb-podium-card[data-rank="1"] .lb-podium-rank { color: var(--accent-gold); }
+    .lb-podium-card[data-rank="2"] .lb-podium-rank { color: #c0c0c0; }
+    .lb-podium-card[data-rank="3"] .lb-podium-rank { color: #cd7f32; }
+
+    .lb-podium-avatar {
+      font-size: 2.8rem;
+      margin-bottom: var(--space-sm);
+      display: block;
+    }
+    .lb-podium-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-podium-class {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+    .lb-podium-country {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+    }
+    .lb-podium-stats {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+    .lb-podium-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .lb-podium-stat-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent-cyan);
+    }
+    .lb-podium-stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Rankings Table ─────────────────────── */
+    .lb-table-wrapper {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .lb-table thead th {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: var(--space-sm) var(--space-md);
+      text-align: left;
+      border-bottom: 1px solid var(--border-panel);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .lb-table tbody tr {
+      transition: background 0.2s ease;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .lb-table tbody tr:hover {
+      background: var(--bg-hover);
+    }
+    .lb-table tbody tr:last-child {
+      border-bottom: none;
+    }
+    .lb-table td {
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    .lb-row-rank {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      width: 50px;
+      text-align: center;
+    }
+    .lb-row-player {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .lb-row-avatar {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .lb-row-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .lb-row-name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-row-class {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .lb-row-country {
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .lb-row-level {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+    .lb-row-xp {
+      color: var(--accent-purple);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+    .lb-row-gold {
+      color: var(--accent-gold);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+    .lb-row-streak {
+      color: var(--diff-easy);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+    .lb-row-quests {
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+    }
+
+    /* My rank highlight */
+    .lb-table tbody tr.lb-me,
+    .lb-table tbody tr.lb-me:hover {
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid var(--accent-cyan);
+      border-left: 3px solid var(--accent-cyan);
+    }
+    .lb-me-tag {
+      display: inline-block;
+      background: var(--accent-cyan);
+      color: var(--bg-void);
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      margin-left: var(--space-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* My rank sticky bar */
+    .lb-my-rank-bar {
+      background: var(--bg-panel);
+      border: 1px solid var(--accent-cyan);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+      margin-top: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      box-shadow: 0 0 20px var(--accent-cyan-glow);
+    }
+    .lb-my-rank-bar .lb-my-rank-label {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--accent-cyan);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .lb-my-rank-bar .lb-my-rank-number {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--accent-gold);
+    }
+    .lb-my-rank-bar .lb-my-rank-details {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      flex: 1;
+      overflow: hidden;
+    }
+    .lb-my-rank-bar .lb-my-rank-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+    .lb-my-rank-bar .lb-my-rank-stats {
+      display: flex;
+      gap: var(--space-md);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Empty state */
+    .lb-empty {
+      text-align: center;
+      padding: var(--space-3xl);
+      color: var(--text-muted);
+    }
+    .lb-empty-icon { font-size: 3rem; margin-bottom: var(--space-md); }
+    .lb-empty h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .lb-podium {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-md);
+        min-height: auto;
+      }
+      .lb-podium-card {
+        width: 90%;
+        max-width: 300px;
+        min-height: auto !important;
+      }
+      .lb-podium-card[data-rank="1"] { order: 1; }
+      .lb-podium-card[data-rank="2"] { order: 2; }
+      .lb-podium-card[data-rank="3"] { order: 3; }
+
+      .lb-header h1 { font-size: 1.8rem; }
+
+      /* Hide some columns on mobile */
+      .lb-table .lb-col-gold,
+      .lb-table .lb-col-streak,
+      .lb-table .lb-col-quests { display: none; }
+
+      .lb-my-rank-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+      }
+      .lb-my-rank-bar .lb-my-rank-stats {
+        margin-left: 0;
+        justify-content: center;
+      }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRow {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/leaderboard.html" class="nav-link active" data-page="leaderboard" aria-label="Leaderboard">🏅 Leaderboard</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="lb-main" id="main-content">
+    <div class="container">
+
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-full" aria-label="Loading leaderboard">
+        <div class="spinner" style="width:48px;height:48px;border-width:3px"></div>
+        <p class="text-muted">Summoning the Hall of Champions...</p>
+      </div>
+
+      <!-- Leaderboard content (hidden until loaded) -->
+      <div id="lb-content" style="display:none">
+
+        <!-- Header -->
+        <div class="lb-header">
+          <h1>🏆 Hall of Champions</h1>
+          <p>The greatest adventurers across all realms</p>
+          <div class="lb-total-badge" id="lb-total-badge">Loading...</div>
+        </div>
+
+        <!-- Sort Tabs -->
+        <div class="lb-sort-bar" id="lb-sort-bar" role="tablist" aria-label="Sort leaderboard by">
+          <button class="lb-sort-btn active" data-sort="level" role="tab" aria-selected="true">⚔ Level</button>
+          <button class="lb-sort-btn" data-sort="xp" role="tab" aria-selected="false">✨ Total XP</button>
+          <button class="lb-sort-btn" data-sort="gold" role="tab" aria-selected="false">🪙 Gold</button>
+          <button class="lb-sort-btn" data-sort="streak" role="tab" aria-selected="false">🔥 Streak</button>
+        </div>
+
+        <!-- Podium -->
+        <div class="lb-podium" id="lb-podium"></div>
+
+        <!-- Rankings Table -->
+        <div class="lb-table-wrapper" id="lb-table-wrapper">
+          <table class="lb-table" id="lb-table">
+            <thead>
+              <tr>
+                <th style="width:50px;text-align:center">Rank</th>
+                <th>Champion</th>
+                <th>🌍</th>
+                <th>Level</th>
+                <th>XP</th>
+                <th class="lb-col-gold">Gold</th>
+                <th class="lb-col-streak">Streak</th>
+                <th class="lb-col-quests">Quests</th>
+              </tr>
+            </thead>
+            <tbody id="lb-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- My Rank Bar (shown if user is authenticated and not in top list) -->
+        <div class="lb-my-rank-bar" id="lb-my-rank-bar" style="display:none"></div>
+
+      </div>
+
+      <!-- Empty state -->
+      <div id="lb-empty" style="display:none">
+        <div class="lb-empty">
+          <div class="lb-empty-icon">🏰</div>
+          <h3>No Champions Yet</h3>
+          <p>Be the first to create a character and claim the throne!</p>
+          <a href="/pages/auth.html?mode=signup" class="btn btn-primary" style="margin-top:var(--space-lg)">⚔ Start Your Journey</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
+  <script>
+    // ── Country code → flag emoji mapping ──
+    const countryToFlag = (code) => {
+      if (!code || code.length !== 2) return '';
+      const codePoints = [...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65);
+      return String.fromCodePoint(...codePoints);
+    };
+
+    const AVATAR_EMOJIS = {
+      scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️',
+      mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙',
+    };
+
+    const CLASS_LABELS = {
+      SCHOLAR: 'Scholar', WARRIOR: 'Warrior', GUARDIAN: 'Guardian', ROGUE: 'Rogue',
+    };
+
+    const CROWN_EMOJIS = { 1: '👑', 2: '🥈', 3: '🥉' };
+
+    const formatNum = (n) => {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    };
+
+    let currentSort = 'level';
+    let currentMyUsername = null;
+
+    // ── Build Podium ──
+    const buildPodium = (entries) => {
+      const podium = document.getElementById('lb-podium');
+      if (entries.length === 0) {
+        podium.innerHTML = '';
+        return;
+      }
+
+      podium.innerHTML = entries.slice(0, 3).map(e => {
+        const avatar = AVATAR_EMOJIS[e.avatar] || '⚔';
+        const cls = CLASS_LABELS[e.class] || e.class || 'Adventurer';
+        const crown = CROWN_EMOJIS[e.rank];
+        const flag = countryToFlag(e.country);
+        const isMe = e.username === currentMyUsername;
+
+        return `
+          <div class="lb-podium-card" data-rank="${e.rank}">
+            <div class="lb-podium-crown">${crown}</div>
+            <div class="lb-podium-rank">#${e.rank}</div>
+            <span class="lb-podium-avatar">${avatar}</span>
+            <div class="lb-podium-name">${e.username}${isMe ? ' <span class="lb-me-tag">You</span>' : ''}</div>
+            <div class="lb-podium-class">${cls}${e.title && e.title !== 'Novice' ? ' • "' + e.title + '"' : ''}</div>
+            ${flag ? `<div class="lb-podium-country">${flag}</div>` : ''}
+            <div class="lb-podium-stats">
+              <div class="lb-podium-stat">
+                <span class="lb-podium-stat-value">${e.level}</span>
+                <span class="lb-podium-stat-label">Level</span>
+              </div>
+              <div class="lb-podium-stat">
+                <span class="lb-podium-stat-value">${formatNum(e.totalXp)}</span>
+                <span class="lb-podium-stat-label">XP</span>
+              </div>
+              <div class="lb-podium-stat">
+                <span class="lb-podium-stat-value">${formatNum(e.gold)}</span>
+                <span class="lb-podium-stat-label">Gold</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    // ── Build Table ──
+    const buildTable = (entries, myRank) => {
+      const tbody = document.getElementById('lb-table-body');
+      const remaining = entries.slice(3); // skip podium entries
+
+      if (remaining.length === 0) {
+        document.getElementById('lb-table-wrapper').style.display = 'none';
+        return;
+      }
+      document.getElementById('lb-table-wrapper').style.display = '';
+
+      tbody.innerHTML = remaining.map((e, i) => {
+        const avatar = AVATAR_EMOJIS[e.avatar] || '⚔';
+        const cls = CLASS_LABELS[e.class] || e.class || 'Adventurer';
+        const flag = countryToFlag(e.country);
+        const isMe = e.username === currentMyUsername;
+
+        return `
+          <tr class="${isMe ? 'lb-me' : ''}" style="animation: fadeInRow 0.3s ease-out ${i * 0.03}s both">
+            <td class="lb-row-rank">${e.rank}</td>
+            <td>
+              <div class="lb-row-player">
+                <span class="lb-row-avatar">${avatar}</span>
+                <div class="lb-row-info">
+                  <span class="lb-row-name">${e.username}${isMe ? ' <span class="lb-me-tag">You</span>' : ''}</span>
+                  <span class="lb-row-class">${cls}</span>
+                </div>
+              </div>
+            </td>
+            <td class="lb-row-country">${flag}</td>
+            <td class="lb-row-level">LV ${e.level}</td>
+            <td class="lb-row-xp">${formatNum(e.totalXp)}</td>
+            <td class="lb-row-gold lb-col-gold">🪙 ${formatNum(e.gold)}</td>
+            <td class="lb-row-streak lb-col-streak">🔥 ${e.currentStreak}</td>
+            <td class="lb-row-quests lb-col-quests">${e.questsCompleted}</td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // ── Build "My Rank" bar (if not in top list) ──
+    const buildMyRankBar = (myRank, entries) => {
+      const bar = document.getElementById('lb-my-rank-bar');
+      if (!myRank || !myRank.isMe) {
+        bar.style.display = 'none';
+        return;
+      }
+
+      // If already visible in table, hide the bar
+      const inList = entries.some(e => e.username === myRank.username);
+      if (inList) {
+        bar.style.display = 'none';
+        return;
+      }
+
+      const avatar = AVATAR_EMOJIS[myRank.avatar] || '⚔';
+      const flag = countryToFlag(myRank.country);
+
+      bar.style.display = 'flex';
+      bar.innerHTML = `
+        <span class="lb-my-rank-label">Your Rank</span>
+        <span class="lb-my-rank-number">#${myRank.rank}</span>
+        <div class="lb-my-rank-details">
+          <span style="font-size:1.4rem">${avatar}</span>
+          <span class="lb-my-rank-name">${myRank.username} ${flag}</span>
+        </div>
+        <div class="lb-my-rank-stats">
+          <span style="color:var(--accent-cyan);font-family:var(--font-display);font-weight:700">LV ${myRank.level}</span>
+          <span style="color:var(--accent-purple);font-family:var(--font-display);font-weight:600">${formatNum(myRank.totalXp)} XP</span>
+          <span style="color:var(--accent-gold);font-family:var(--font-display);font-weight:600">🪙 ${formatNum(myRank.gold)}</span>
+        </div>
+      `;
+    };
+
+    // ── Load Leaderboard ──
+    const loadLeaderboard = async (sort = 'level') => {
+      try {
+        const data = await API.leaderboard.get({ sort, limit: 50 });
+
+        document.getElementById('loading-state').style.display = 'none';
+
+        if (!data.leaderboard || data.leaderboard.length === 0) {
+          document.getElementById('lb-content').style.display = 'none';
+          document.getElementById('lb-empty').style.display = 'block';
+          return;
+        }
+
+        document.getElementById('lb-content').style.display = 'block';
+        document.getElementById('lb-empty').style.display = 'none';
+
+        // Total badge
+        document.getElementById('lb-total-badge').textContent = `${data.total} Adventurer${data.total !== 1 ? 's' : ''} Worldwide`;
+
+        // Track current user
+        if (data.myRank) {
+          currentMyUsername = data.myRank.username;
+        }
+
+        buildPodium(data.leaderboard);
+        buildTable(data.leaderboard, data.myRank);
+        buildMyRankBar(data.myRank, data.leaderboard);
+
+      } catch (err) {
+        console.error('Leaderboard load error:', err);
+        document.getElementById('loading-state').innerHTML = `
+          <div style="text-align:center;color:var(--text-muted)">
+            <div style="font-size:2rem;margin-bottom:var(--space-md)">⚠️</div>
+            <p>Failed to load the Hall of Champions</p>
+            <button class="btn btn-ghost btn-sm" style="margin-top:var(--space-md)" id="lb-retry-btn">Try Again</button>
+          </div>
+        `;
+        document.getElementById('lb-retry-btn')?.addEventListener('click', () => {
+          document.getElementById('loading-state').innerHTML = `
+            <div class="spinner" style="width:48px;height:48px;border-width:3px"></div>
+            <p class="text-muted">Summoning the Hall of Champions...</p>
+          `;
+          loadLeaderboard(currentSort);
+        });
+      }
+    };
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Init nav
+      if (typeof Utils !== 'undefined' && Utils.initNav) Utils.initNav();
+      if (typeof HeaderAuth !== 'undefined') {
+        await HeaderAuth.init({ containerId: 'nav-user-slot', isAppNav: false });
+      }
+      if (typeof Utils !== 'undefined' && Utils.initParticles) Utils.initParticles();
+
+      // Sort tabs
+      document.getElementById('lb-sort-bar').addEventListener('click', (e) => {
+        const btn = e.target.closest('.lb-sort-btn');
+        if (!btn) return;
+        const sort = btn.dataset.sort;
+        if (sort === currentSort) return;
+
+        currentSort = sort;
+        document.querySelectorAll('.lb-sort-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        // Show loading
+        document.getElementById('lb-podium').innerHTML = '<div class="spinner" style="width:32px;height:32px;border-width:2px"></div>';
+        document.getElementById('lb-table-body').innerHTML = '';
+
+        loadLeaderboard(sort);
+      });
+
+      // Load initial data
+      loadLeaderboard('level');
+    });
+  </script>
+</body>
+</html>

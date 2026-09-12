@@ -344,14 +344,19 @@
   <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="container nav-inner">
       <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
-      <div id="nav-auth-slot" class="nav-auth-slot" aria-live="polite">
-        <div class="nav-auth-skeleton" aria-hidden="true" title="Checking session..."></div>
-        <noscript>
-          <div class="nav-auth-buttons">
-            <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-sm">Log In</a>
-            <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-sm">Start Journey</a>
-          </div>
-        </noscript>
+      <div style="display:flex;align-items:center;gap:var(--space-lg)">
+        <a href="/pages/leaderboard.html" class="nav-link" style="color:var(--accent-gold);font-weight:700;display:inline-flex;align-items:center;gap:6px">
+          <span>🏆</span><span>Hall of Champions</span>
+        </a>
+        <div id="nav-auth-slot" class="nav-auth-slot" aria-live="polite">
+          <div class="nav-auth-skeleton" aria-hidden="true" title="Checking session..."></div>
+          <noscript>
+            <div class="nav-auth-buttons">
+              <a href="/pages/auth.html?mode=login" class="btn btn-ghost btn-sm">Log In</a>
+              <a href="/pages/auth.html?mode=signup" class="btn btn-primary btn-sm">Start Journey</a>
+            </div>
+          </noscript>
+        </div>
       </div>
     </div>
   </nav>
@@ -530,6 +535,11 @@
           <span class="feature-icon">🛡</span>
           <div class="feature-title">Server-Authoritative</div>
           <p class="feature-desc">Tamper-proof, database-backed XP and level calculations with enterprise security.</p>
+        </div>
+        <div class="feature-card" style="cursor:pointer" onclick="window.location.href='/pages/leaderboard.html'">
+          <span class="feature-icon">🏅</span>
+          <div class="feature-title" style="color:var(--accent-gold)">Hall of Champions</div>
+          <p class="feature-desc">Compete with adventurers worldwide on the global real-time leaderboards by level, XP, gold, and streak.</p>
         </div>
       </div>
     </div>

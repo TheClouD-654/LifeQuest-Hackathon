@@ -125,6 +125,10 @@
             <span class="item-icon">🏆</span>
             <span class="item-text">Stats</span>
           </a>
+          <a href="/pages/leaderboard.html" class="nav-profile-item" role="menuitem">
+            <span class="item-icon">🏅</span>
+            <span class="item-text">Hall of Champions</span>
+          </a>
           <a href="/pages/shop.html" class="nav-profile-item" role="menuitem">
             <span class="item-icon">🛡</span>
             <span class="item-text">Armory</span>

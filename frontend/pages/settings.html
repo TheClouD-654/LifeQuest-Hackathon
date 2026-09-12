@@ -25,6 +25,7 @@
         <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
         <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
         <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/leaderboard.html" class="nav-link" data-page="leaderboard" aria-label="Leaderboard">🏅 Leaderboard</a></li>
         <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
         <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
         <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
@@ -113,6 +114,15 @@
               <label class="form-label" for="pref-title">Custom Title</label>
               <input type="text" id="pref-title" class="form-input" placeholder='e.g. "The Relentless", "Code Wizard", "Ironbound"' maxlength="40">
               <span class="form-help">Appears beneath your character name on cards and badges.</span>
+            </div>
+
+            <!-- Realm / Location Country -->
+            <div class="form-group">
+              <label class="form-label" for="pref-country">Realm / Location (Country)</label>
+              <select id="pref-country" class="form-input">
+                <option value="">None / Hidden</option>
+              </select>
+              <span class="form-help">Display your realm flag on the Hall of Champions and Character Profile.</span>
             </div>
 
             <button type="submit" class="btn btn-primary" id="save-customization-btn">
@@ -354,6 +364,9 @@
     const renderCustomizationInputs = (p) => {
       document.getElementById('pref-username').value = p.username || '';
       document.getElementById('pref-title').value = p.title || '';
+      if (typeof Utils !== 'undefined' && Utils.populateCountrySelect) {
+        Utils.populateCountrySelect(document.getElementById('pref-country'), p.country);
+      }
     };
 
     // ─── Render Goals ───────────────────────────────────────────────
@@ -420,6 +433,7 @@
 
       const username = document.getElementById('pref-username').value.trim();
       const title = document.getElementById('pref-title').value.trim();
+      const country = document.getElementById('pref-country').value.trim() || null;
 
       if (!username || username.length < 2) {
         errEl.style.display = 'flex';
@@ -441,6 +455,7 @@
         const res = await API.profile.update({
           username,
           title,
+          country,
           avatar: selectedAvatar,
         });
 

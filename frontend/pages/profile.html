@@ -25,6 +25,7 @@
         <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
         <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
         <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/leaderboard.html" class="nav-link" data-page="leaderboard" aria-label="Leaderboard">🏅 Leaderboard</a></li>
         <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
         <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
         <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
@@ -99,6 +100,10 @@
                 <div class="profile-meta-chip" id="profile-auth-method-chip">
                   <span id="profile-auth-icon">🛡</span>
                   <span id="profile-auth-text">Email Account</span>
+                </div>
+                <div class="profile-meta-chip" id="profile-country-chip" style="display:none">
+                  <span id="profile-country-flag">🌍</span>
+                  <span id="profile-country-name">Realm</span>
                 </div>
               </div>
             </div>
@@ -258,6 +263,20 @@
       if (p.account?.authMethod) {
         document.getElementById('profile-auth-icon').textContent = p.account.authMethod === 'Google' ? '🌐' : '🔒';
         document.getElementById('profile-auth-text').textContent = `${p.account.authMethod} Auth`;
+      }
+
+      // Realm / Country
+      const countryChip = document.getElementById('profile-country-chip');
+      if (countryChip) {
+        if (p.country) {
+          const flag = typeof Utils !== 'undefined' && Utils.countryToFlag ? Utils.countryToFlag(p.country) : '';
+          const cObj = typeof Utils !== 'undefined' && Utils.COUNTRIES ? Utils.COUNTRIES.find(c => c.code === p.country.toUpperCase()) : null;
+          document.getElementById('profile-country-flag').textContent = flag || '🌍';
+          document.getElementById('profile-country-name').textContent = cObj?.name || p.country;
+          countryChip.style.display = 'inline-flex';
+        } else {
+          countryChip.style.display = 'none';
+        }
       }
     };
 

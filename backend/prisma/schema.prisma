@@ -45,6 +45,7 @@ model Profile {
   avatar           String    @default("warrior")
   class            String    @default("SCHOLAR")
   title            String    @default("Novice")
+  country          String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

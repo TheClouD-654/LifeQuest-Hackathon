@@ -127,9 +127,17 @@ const stats = {
   get: () => request('GET', '/api/stats'),
 };
 
+// ─── Leaderboard ──────────────────────────────────────────────
+const leaderboard = {
+  get: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return request('GET', `/api/leaderboard${q ? '?' + q : ''}`);
+  },
+};
+
 // Export
 window.API = {
   auth, profile, attributes, quests, activity,
   missions, shop, inventory, achievements, stats,
-  APIError,
+  leaderboard, APIError,
 };

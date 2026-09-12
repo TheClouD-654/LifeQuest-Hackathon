@@ -182,6 +182,18 @@
           </div>
         </div>
 
+        <!-- Realm / Location -->
+        <div class="creation-section">
+          <div class="section-title">Your Realm / Location</div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="country">Country (Optional)</label>
+            <select id="country" class="form-input">
+              <option value="">None / Hidden</option>
+            </select>
+            <span class="text-muted text-xs" style="margin-top:4px;display:block">Represent your realm on the global Hall of Champions.</span>
+          </div>
+        </div>
+
         <!-- Avatar -->
         <div class="creation-section">
           <div class="section-title">Choose Avatar</div>
@@ -281,6 +293,10 @@
     let selectedClass = 'SCHOLAR';
     let selectedGoals = new Set(['CODING', 'STUDY']);
 
+    if (typeof Utils !== 'undefined' && Utils.populateCountrySelect) {
+      Utils.populateCountrySelect(document.getElementById('country'));
+    }
+
     // ─── Auth check ───────────────────────────────────────────────
     (async () => {
       const user = await Utils.requireAuthRedirect();
@@ -375,6 +391,8 @@
         return;
       }
 
+      const country = document.getElementById('country').value.trim() || null;
+
       const btn = document.getElementById('create-btn');
       btn._orig = btn.innerHTML;
       btn.innerHTML = '<div class="spinner" style="margin:0 auto"></div>';
@@ -386,6 +404,7 @@
           avatar: selectedAvatar,
           class: selectedClass,
           goals: Array.from(selectedGoals),
+          country,
         });
         window.location.href = '/pages/dashboard.html';
       } catch (err) {

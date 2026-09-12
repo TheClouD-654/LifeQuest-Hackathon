@@ -159,6 +159,7 @@ app.use('/api/shop', require('./routes/shop'));
 app.use('/api/inventory', require('./routes/inventory'));
 app.use('/api/achievements', require('./routes/achievements'));
 app.use('/api/stats', require('./routes/stats'));
+app.use('/api/leaderboard', require('./routes/leaderboard'));
 
 // ─── Static Frontend Serving (Unified Cloud Deployment) ──────────────────────
 const path = require('path');

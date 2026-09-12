@@ -336,6 +336,86 @@ const initNav = (activePage = '') => {
   }
 };
 
+/**
+ * Convert 2-letter ISO country code to flag emoji
+ */
+const countryToFlag = (code) => {
+  if (!code || typeof code !== 'string' || code.trim().length !== 2) return '';
+  const clean = code.trim().toUpperCase();
+  const codePoints = [...clean].map(c => 0x1F1E6 + c.charCodeAt(0) - 65);
+  return String.fromCodePoint(...codePoints);
+};
+
+/**
+ * Global realm / countries list
+ */
+const COUNTRIES = [
+  { code: 'US', name: 'United States' },
+  { code: 'IN', name: 'India' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'CH', name: 'Switzerland' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'PH', name: 'Philippines' },
+  { code: 'PK', name: 'Pakistan' },
+  { code: 'NG', name: 'Nigeria' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'EG', name: 'Egypt' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'TR', name: 'Turkey' },
+  { code: 'VN', name: 'Vietnam' },
+  { code: 'TH', name: 'Thailand' },
+  { code: 'MY', name: 'Malaysia' },
+  { code: 'ID', name: 'Indonesia' },
+  { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'AT', name: 'Austria' },
+  { code: 'BE', name: 'Belgium' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'GR', name: 'Greece' },
+  { code: 'CZ', name: 'Czechia' },
+  { code: 'RO', name: 'Romania' },
+  { code: 'HU', name: 'Hungary' },
+  { code: 'UA', name: 'Ukraine' },
+  { code: 'IL', name: 'Israel' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'PE', name: 'Peru' },
+  { code: 'TW', name: 'Taiwan' },
+  { code: 'HK', name: 'Hong Kong' },
+].map(c => ({ ...c, flag: countryToFlag(c.code) }));
+
+/**
+ * Populate a select element with countries
+ */
+const populateCountrySelect = (selectEl, selectedCode = '') => {
+  if (!selectEl) return;
+  selectEl.innerHTML = `
+    <option value="">None / Hidden</option>
+    ${COUNTRIES.map(c => `
+      <option value="${c.code}" ${c.code === (selectedCode || '').toUpperCase() ? 'selected' : ''}>
+        ${c.flag} ${c.name}
+      </option>
+    `).join('')}
+  `;
+};
+
 // Expose globally
 window.Utils = {
   formatMinutes, formatNumber, animateNumber,
@@ -344,4 +424,5 @@ window.Utils = {
   requireAuthRedirect, checkProfileOrRedirect,
   buildXPBar, buildAttributeBars, buildQuestCard,
   initParticles, initNav, updateNavCharacter,
+  countryToFlag, COUNTRIES, populateCountrySelect,
 };

@@ -86,11 +86,12 @@ router.post('/create', requireAuth, [
   body('avatar').optional().isString(),
   body('class').optional().isIn(['SCHOLAR', 'WARRIOR', 'GUARDIAN', 'ROGUE']),
   body('goals').optional().isArray(),
+  body('country').optional().isString().isLength({ max: 2 }),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ error: errors.array()[0].msg });
 
-  const { username, avatar = 'warrior', class: characterClass = 'SCHOLAR', goals = ['STUDY', 'CODING'] } = req.body;
+  const { username, avatar = 'warrior', class: characterClass = 'SCHOLAR', goals = ['STUDY', 'CODING'], country } = req.body;
 
   try {
     // Check username uniqueness
@@ -119,6 +120,7 @@ router.post('/create', requireAuth, [
           avatar,
           class: characterClass,
           title: 'Novice',
+          country: country ? country.toUpperCase() : null,
           level: 1,
           totalXp: 0,
           currentXp: 0,
@@ -158,6 +160,7 @@ router.patch('/', requireAuth, [
   body('avatar').optional().isString(),
   body('title').optional().isString().isLength({ max: 50 }),
   body('goals').optional(),
+  body('country').optional().isString().isLength({ max: 2 }).withMessage('Country must be a 2-letter code'),
   body('theme').optional().isString(),
   body('notificationsEnabled').optional().isBoolean(),
   body('activityTrackingEnabled').optional().isBoolean(),
@@ -165,12 +168,13 @@ router.patch('/', requireAuth, [
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ error: errors.array()[0].msg });
 
-  const { username, avatar, title, goals, theme, notificationsEnabled, activityTrackingEnabled } = req.body;
+  const { username, avatar, title, goals, country, theme, notificationsEnabled, activityTrackingEnabled } = req.body;
 
   try {
     const profileUpdates = {};
     if (avatar !== undefined) profileUpdates.avatar = avatar;
     if (title !== undefined) profileUpdates.title = title;
+    if (country !== undefined) profileUpdates.country = country ? country.toUpperCase() : null;
 
     if (username !== undefined) {
       // Check if username is already taken by someone else
