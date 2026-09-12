@@ -19,7 +19,7 @@
   <div id="avatar-crop-modal" class="avatar-crop-overlay" hidden>
     <div class="avatar-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
       <h3 id="avatar-crop-title" class="avatar-crop-title">✂ Frame Your Avatar</h3>
-      <p class="avatar-crop-hint text-muted">Drag to reposition — the square below is what everyone will see.</p>
+      <p class="avatar-crop-hint text-muted">Drag to reposition, scroll or pinch to zoom — the circle is what everyone will see.</p>
       <div id="avatar-crop-stage" class="avatar-crop-stage" aria-label="Image crop area">
         <img id="avatar-crop-img" alt="Selected avatar image" draggable="false">
       </div>
@@ -497,37 +497,117 @@
     };
 
     const cropToDataUrl = () => {
-      // Sample exactly the stage square from the transformed image → 256×256 JPEG (~15-60KB)
-      const OUT = 256;
+      // Sample the stage through the circle mask → PNG with transparent corners.
+      // Steps resolution down if a noisy photo would blow past the upload cap.
+      let out = 256;
       const rect = cropStage.getBoundingClientRect();
-      const canvas = document.createElement('canvas');
-      canvas.width = OUT;
-      canvas.height = OUT;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#0f1420';
-      ctx.fillRect(0, 0, OUT, OUT);
-      const sx = (0 - cropState.x) / cropState.scale;
-      const sy = (0 - cropState.y) / cropState.scale;
-      const sw = rect.width / cropState.scale;
-      const sh = rect.height / cropState.scale;
-      ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, OUT, OUT);
-      return canvas.toDataURL('image/jpeg', 0.85);
+      for (;;) {
+        const canvas = document.createElement('canvas');
+        canvas.width = out;
+        canvas.height = out;
+        const ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        ctx.arc(out / 2, out / 2, out / 2, 0, Math.PI * 2);
+        ctx.clip();
+        const sx = (0 - cropState.x) / cropState.scale;
+        const sy = (0 - cropState.y) / cropState.scale;
+        const sw = rect.width / cropState.scale;
+        const sh = rect.height / cropState.scale;
+        ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, out, out);
+        const url = canvas.toDataURL('image/png');
+        if (url.length <= 280_000 || out <= 128) return url;
+        out = Math.floor(out / 1.4);
+      }
     };
 
+    const clampCropState = () => {
+      if (!cropState) return;
+      const { width: sw, height: sh } = cropStage.getBoundingClientRect();
+      const iw = cropImg.naturalWidth * cropState.scale;
+      const ih = cropImg.naturalHeight * cropState.scale;
+      cropState.x = Math.min(0, Math.max(sw - iw, cropState.x));
+      cropState.y = Math.min(0, Math.max(sh - ih, cropState.y));
+    };
+
+    const minScale = () => {
+      const { width: sw, height: sh } = cropStage.getBoundingClientRect();
+      return Math.max(sw / cropImg.naturalWidth, sh / cropImg.naturalHeight);
+    };
+    const MAX_ZOOM = 8; // up to 8× the cover fit
+
+    const zoomAt = (cx, cy, factor) => {
+      if (!cropState) return;
+      const rect = cropStage.getBoundingClientRect();
+      const px = cx - rect.left, py = cy - rect.top;
+      const next = Math.min(minScale() * MAX_ZOOM, Math.max(minScale(), cropState.scale * factor));
+      const k = next / cropState.scale;
+      // keep the point under the cursor pinned while zooming
+      cropState.x = px - (px - cropState.x) * k;
+      cropState.y = py - (py - cropState.y) * k;
+      cropState.scale = next;
+      clampCropState();
+      applyCropTransform();
+    };
+
+    cropStage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+    }, { passive: false });
+
+    // Multi-pointer pan + pinch-zoom (mouse drag, touch, pen)
+    const activePtrs = new Map();
+    let pinchBase = null; // { dist, cx, cy, state }
     cropStage.addEventListener('pointerdown', (e) => {
       if (!cropState) return;
-      dragState = { startX: e.clientX, startY: e.clientY, ox: cropState.x, oy: cropState.y };
       cropStage.setPointerCapture(e.pointerId);
+      activePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePtrs.size === 1) {
+        dragState = { startX: e.clientX, startY: e.clientY, ox: cropState.x, oy: cropState.y };
+      } else {
+        dragState = null;
+        const [a, b] = [...activePtrs.values()];
+        pinchBase = {
+          dist: Math.hypot(a.x - b.x, a.y - b.y),
+          cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2,
+          state: { ...cropState },
+        };
+      }
       e.preventDefault();
     });
     cropStage.addEventListener('pointermove', (e) => {
-      if (!dragState || !cropState) return;
-      cropState.x = dragState.ox + (e.clientX - dragState.startX);
-      cropState.y = dragState.oy + (e.clientY - dragState.startY);
-      applyCropTransform();
+      if (!cropState || !activePtrs.has(e.pointerId)) return;
+      activePtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePtrs.size >= 2 && pinchBase) {
+        const [a, b] = [...activePtrs.values()];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        const rect = cropStage.getBoundingClientRect();
+        const px = pinchBase.cx - rect.left, py = pinchBase.cy - rect.top;
+        const next = Math.min(minScale() * MAX_ZOOM, Math.max(minScale(), pinchBase.state.scale * (dist / (pinchBase.dist || 1))));
+        const k = next / pinchBase.state.scale;
+        cropState.scale = next;
+        cropState.x = px - (px - pinchBase.state.x) * k;
+        cropState.y = py - (py - pinchBase.state.y) * k;
+        clampCropState();
+        applyCropTransform();
+      } else if (dragState) {
+        cropState.x = dragState.ox + (e.clientX - dragState.startX);
+        cropState.y = dragState.oy + (e.clientY - dragState.startY);
+        clampCropState();
+        applyCropTransform();
+      }
     });
     ['pointerup', 'pointercancel'].forEach(ev =>
-      cropStage.addEventListener(ev, () => { dragState = null; })
+      cropStage.addEventListener(ev, (e) => {
+        activePtrs.delete(e.pointerId);
+        if (activePtrs.size === 1) {
+          const [p] = [...activePtrs.values()];
+          dragState = { startX: p.x, startY: p.y, ox: cropState.x, oy: cropState.y };
+          pinchBase = null;
+        } else if (activePtrs.size === 0) {
+          dragState = null;
+          pinchBase = null;
+        }
+      })
     );
 
     fileInput.addEventListener('change', () => {
