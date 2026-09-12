@@ -718,13 +718,13 @@
     };
 
     // ── Init ──
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Init nav
-      if (typeof Utils !== 'undefined' && Utils.initNav) Utils.initNav();
-      if (typeof HeaderAuth !== 'undefined') {
-        await HeaderAuth.init({ containerId: 'nav-user-slot', isAppNav: false });
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      // Init nav (automatically initializes HeaderAuth for nav-user-slot with isAppNav: false)
+      if (typeof Utils !== 'undefined' && Utils.initNav) Utils.initNav('leaderboard');
       if (typeof Utils !== 'undefined' && Utils.initParticles) Utils.initParticles();
+
+      // Load initial data immediately
+      loadLeaderboard('level');
 
       // Sort tabs
       document.getElementById('lb-sort-bar').addEventListener('click', (e) => {

@@ -332,7 +332,8 @@ const initNav = (activePage = '') => {
   // Mount unified RPG HUD if nav-user-slot exists
   const userSlot = document.getElementById('nav-user-slot');
   if (userSlot && typeof HeaderAuth !== 'undefined') {
-    HeaderAuth.init({ containerId: 'nav-user-slot', isAppNav: true });
+    const isPublic = ['leaderboard'].includes(activePage);
+    HeaderAuth.init({ containerId: 'nav-user-slot', isAppNav: !isPublic });
   }
 };
 

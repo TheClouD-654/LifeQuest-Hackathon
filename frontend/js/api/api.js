@@ -4,7 +4,7 @@
 // ============================================================
 
 const BASE_URL = window.LIFE_RPG_API_URL || (
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  (!window.location.hostname || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000'
     : window.location.origin
 );
