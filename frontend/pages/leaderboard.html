@@ -558,7 +558,7 @@
       }
 
       podium.innerHTML = entries.slice(0, 3).map(e => {
-        const avatar = AVATAR_EMOJIS[e.avatar] || '⚔';
+        const avatar = Utils.avatarHtml(e.avatar, '1em', '⚔');
         const cls = CLASS_LABELS[e.class] || e.class || 'Adventurer';
         const crown = CROWN_EMOJIS[e.rank];
         const flag = countryToFlag(e.country);
@@ -603,7 +603,7 @@
       document.getElementById('lb-table-wrapper').style.display = '';
 
       tbody.innerHTML = remaining.map((e, i) => {
-        const avatar = AVATAR_EMOJIS[e.avatar] || '⚔';
+        const avatar = Utils.avatarHtml(e.avatar, '1em', '⚔');
         const cls = CLASS_LABELS[e.class] || e.class || 'Adventurer';
         const flag = countryToFlag(e.country);
         const isMe = e.username === currentMyUsername;
@@ -646,7 +646,7 @@
         return;
       }
 
-      const avatar = AVATAR_EMOJIS[myRank.avatar] || '⚔';
+      const avatar = Utils.avatarHtml(myRank.avatar, '1em', '⚔');
       const flag = countryToFlag(myRank.country);
 
       bar.style.display = 'flex';

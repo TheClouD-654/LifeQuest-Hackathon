@@ -731,7 +731,8 @@
       ];
       const DIFF = { EASY: ['easy', 'EASY'], MEDIUM: ['medium', 'MED'], HARD: ['hard', 'HARD'], EPIC: ['epic', 'EPIC'] };
 
-      document.getElementById('cc-avatar').textContent = AVATARS[profile.avatar] || '🧙';
+      if (typeof Utils !== 'undefined' && Utils.setAvatar) Utils.setAvatar(document.getElementById('cc-avatar'), profile.avatar, '🧙');
+      else document.getElementById('cc-avatar').textContent = AVATARS[profile.avatar] || '🧙';
       document.getElementById('cc-name').textContent = profile.username;
       document.getElementById('cc-title').textContent = `"${profile.title}"`;
       document.getElementById('cc-streak').innerHTML = `<span class="streak-fire">🔥</span> ${profile.currentStreak} Day Streak`;

@@ -9,6 +9,21 @@ const prisma = require('../utils/prisma');
 const { requireAuth } = require('../middleware/auth');
 const { calculateLevel } = require('../services/rpgEngine');
 
+// ─── Avatar validation ─────────────────────────────────────────────────────────
+// Either a built-in avatar id or a base64 data-URL image (custom upload / camera).
+// The strict char class also guarantees the value is HTML-safe to interpolate.
+const BUILTIN_AVATARS = ['scholar', 'warrior', 'rogue', 'guardian', 'mage', 'ranger', 'paladin', 'assassin'];
+const CUSTOM_AVATAR_MAX_LENGTH = 300_000; // ~225KB binary → ~80KB after client downscale
+const isValidAvatar = (value) =>
+  BUILTIN_AVATARS.includes(value) ||
+  (
+    value.length <= CUSTOM_AVATAR_MAX_LENGTH &&
+    /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(value)
+  );
+const avatarValidator =
+  body('avatar').optional({ nullable: true }).isString().custom(isValidAvatar)
+    .withMessage('Avatar must be a built-in avatar or an image up to ~300KB.');
+
 // ─── GET /api/profile ─────────────────────────────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -83,7 +98,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.post('/create', requireAuth, [
   body('username').trim().isLength({ min: 2, max: 20 }).withMessage('Username must be 2–20 characters')
     .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, underscores'),
-  body('avatar').optional().isString(),
+  avatarValidator,
   body('class').optional().isIn(['SCHOLAR', 'WARRIOR', 'GUARDIAN', 'ROGUE']),
   body('goals').optional().isArray(),
   body('country').optional().isString().isLength({ max: 2 }),
@@ -157,7 +172,7 @@ router.post('/create', requireAuth, [
 router.patch('/', requireAuth, [
   body('username').optional().trim().isLength({ min: 2, max: 20 }).withMessage('Username must be 2–20 characters')
     .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, underscores'),
-  body('avatar').optional().isString(),
+  avatarValidator,
   body('title').optional().isString().isLength({ max: 50 }),
   body('goals').optional(),
   body('country').optional().isString().isLength({ max: 2 }).withMessage('Country must be a 2-letter code'),

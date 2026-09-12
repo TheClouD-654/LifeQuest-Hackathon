@@ -233,7 +233,8 @@
     // ─── Render Character Card ──────────────────────────────────────
     const renderCharacterCard = (p) => {
       const avatarEl = document.getElementById('profile-avatar');
-      avatarEl.textContent = AVATAR_EMOJIS[p.avatar] || '🧙';
+      if (typeof Utils !== 'undefined' && Utils.setAvatar) Utils.setAvatar(avatarEl, p.avatar, '🧙');
+      else avatarEl.textContent = AVATAR_EMOJIS[p.avatar] || '🧙';
 
       document.getElementById('profile-class').textContent = (p.class || 'WARRIOR').toUpperCase();
       document.getElementById('profile-username').textContent = p.username || 'Adventurer';

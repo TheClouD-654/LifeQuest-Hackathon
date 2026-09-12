@@ -256,9 +256,10 @@
 
     // ─── Render Character ─────────────────────────────────────────
     const renderCharacter = (profile, attrs) => {
-      // Avatar
+      // Avatar (emoji or custom uploaded image)
       const avatarEl = document.getElementById('char-avatar');
-      avatarEl.textContent = AVATAR_EMOJIS[profile.avatar] || '🧙';
+      if (typeof Utils !== 'undefined' && Utils.setAvatar) Utils.setAvatar(avatarEl, profile.avatar, '🧙');
+      else avatarEl.textContent = AVATAR_EMOJIS[profile.avatar] || '🧙';
 
       // Name & title
       document.getElementById('char-username').textContent = profile.username;

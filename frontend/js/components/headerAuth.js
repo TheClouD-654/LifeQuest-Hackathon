@@ -62,7 +62,9 @@
     const charName = hasProfile ? prof.username : 'New Adventurer';
     const charLevel = prof.level || 1;
     const charGold = typeof prof.gold === 'number' ? prof.gold : 100;
-    const charAvatar = AVATAR_EMOJIS[prof.avatar] || '⚔';
+    const charAvatar = (typeof Utils !== 'undefined' && Utils.avatarHtml)
+      ? Utils.avatarHtml(prof.avatar, '1em', '⚔')
+      : (AVATAR_EMOJIS[prof.avatar] || '⚔');
     const charClass = CLASS_LABELS[prof.class] || prof.class || (hasProfile ? 'Novice' : 'Setup Pending');
     const charTitle = prof.title ? ` • "${prof.title}"` : '';
 

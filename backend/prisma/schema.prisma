@@ -42,7 +42,7 @@ model Profile {
   currentStreak    Int       @default(0)
   longestStreak    Int       @default(0)
   lastActivityDate DateTime?
-  avatar           String    @default("warrior")
+  avatar           String    @default("warrior") @db.MediumText
   class            String    @default("SCHOLAR")
   title            String    @default("Novice")
   country          String?

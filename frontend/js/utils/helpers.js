@@ -417,6 +417,45 @@ const populateCountrySelect = (selectEl, selectedCode = '') => {
   `;
 };
 
+// ─── Avatar rendering (built-in emoji ids + custom data-URL uploads) ──────────
+// NOTE: named ..._MAP because several pages declare their own top-level
+// `const AVATAR_EMOJIS` in inline scripts (shared global scope → collision).
+const AVATAR_EMOJI_MAP = {
+  scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️',
+  mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙',
+};
+
+/**
+ * Custom avatars are stored as data URLs; built-ins are simple ids like 'warrior'.
+ */
+const isCustomAvatar = (avatar) => typeof avatar === 'string' && avatar.startsWith('data:image/');
+
+const avatarEmoji = (avatar, fallback = '⚔') =>
+  (avatar && !isCustomAvatar(avatar) && AVATAR_EMOJI_MAP[avatar]) || fallback;
+
+/**
+ * HTML string for an avatar — an <img> for custom uploads, the emoji otherwise.
+ * `size` accepts any CSS length ('1em' scales with the surrounding font like an emoji would).
+ */
+const avatarHtml = (avatar, size = '1em', fallback = '⚔') => {
+  if (isCustomAvatar(avatar)) {
+    return `<img src="${avatar}" alt="" style="width:${size};height:${size};border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle">`;
+  }
+  return avatarEmoji(avatar, fallback);
+};
+
+/**
+ * Paint an avatar into an existing element (circle divs etc.) in place.
+ */
+const setAvatar = (el, avatar, fallback = '🧙') => {
+  if (!el) return;
+  if (isCustomAvatar(avatar)) {
+    el.innerHTML = `<img src="${avatar}" alt="Custom avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block">`;
+  } else {
+    el.textContent = avatarEmoji(avatar, fallback);
+  }
+};
+
 // Expose globally
 window.Utils = {
   formatMinutes, formatNumber, animateNumber,
@@ -426,4 +465,5 @@ window.Utils = {
   buildXPBar, buildAttributeBars, buildQuestCard,
   initParticles, initNav, updateNavCharacter,
   countryToFlag, COUNTRIES, populateCountrySelect,
+  isCustomAvatar, avatarEmoji, avatarHtml, setAvatar, AVATAR_EMOJI_MAP,
 };

@@ -15,6 +15,22 @@
   <div class="bg-mesh"></div>
   <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
+  <!-- Custom avatar crop modal -->
+  <div id="avatar-crop-modal" class="avatar-crop-overlay" hidden>
+    <div class="avatar-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+      <h3 id="avatar-crop-title" class="avatar-crop-title">✂ Frame Your Avatar</h3>
+      <p class="avatar-crop-hint text-muted">Drag to reposition — the square below is what everyone will see.</p>
+      <div id="avatar-crop-stage" class="avatar-crop-stage" aria-label="Image crop area">
+        <img id="avatar-crop-img" alt="Selected avatar image" draggable="false">
+      </div>
+      <div class="avatar-crop-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="avatar-crop-camera">📷 Camera</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="avatar-crop-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="avatar-crop-use">✓ Use This Picture</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation -->
   <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="container nav-inner">
@@ -98,8 +114,11 @@
             <div class="form-group">
               <label class="form-label" id="avatar-picker-label">Choose Character Avatar</label>
               <div class="avatar-picker-grid" id="avatar-picker-grid" role="radiogroup" aria-labelledby="avatar-picker-label">
-                <!-- Dynamically rendered -->
+                <!-- Dynamically rendered (8 avatars + CUSTOM tile) -->
               </div>
+              <input type="file" id="custom-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+              <input type="file" id="custom-avatar-camera" accept="image/*" capture="environment" hidden>
+              <span class="form-help">Pick CUSTOM to upload an image from your device or snap one with your camera.</span>
             </div>
 
             <!-- Character / Display Name -->
@@ -271,6 +290,7 @@
     };
 
     let selectedAvatar = 'warrior';
+    let customAvatarData = null; // data URL of the user's uploaded/captured picture
     let selectedGoals = new Set(['CODING', 'STUDY']);
     let profileData = null;
 
@@ -311,8 +331,7 @@
 
     // ─── Render Account Overview ────────────────────────────────────
     const renderAccountInfo = (p) => {
-      const avatarObj = AVATARS.find(a => a.id === p.avatar) || AVATARS[1];
-      document.getElementById('settings-avatar-preview').textContent = avatarObj.emoji;
+      Utils.setAvatar(document.getElementById('settings-avatar-preview'), p.avatar, '🧙');
       document.getElementById('settings-username').textContent = p.username || 'Adventurer';
       document.getElementById('settings-email').textContent = p.account?.email || '';
       document.getElementById('settings-class-badge').textContent = CLASS_LABELS[p.class] || p.class || 'WARRIOR';
@@ -328,8 +347,34 @@
     };
 
     // ─── Render Avatar Picker ───────────────────────────────────────
+    const previewEl = () => document.getElementById('settings-avatar-preview');
+
+    const setAvatarSelection = (value) => {
+      selectedAvatar = value;
+      const grid = document.getElementById('avatar-picker-grid');
+      grid.querySelectorAll('.avatar-option-btn').forEach(b => {
+        const isSel = b.dataset.avatar === value;
+        b.classList.toggle('selected', isSel);
+        b.setAttribute('aria-checked', isSel ? 'true' : 'false');
+      });
+      Utils.setAvatar(previewEl(), value === 'custom' ? customAvatarData : value, '🧙');
+    };
+
+    const refreshCustomTile = () => {
+      const thumb = document.getElementById('custom-avatar-thumb');
+      if (!thumb) return;
+      thumb.innerHTML = customAvatarData
+        ? `<img src="${customAvatarData}" alt="" style="width:1.8rem;height:1.8rem;border-radius:50%;object-fit:cover">`
+        : '📤';
+    };
+
     const renderAvatarPicker = (currentAvatar) => {
-      selectedAvatar = currentAvatar;
+      if (Utils.isCustomAvatar(currentAvatar)) {
+        customAvatarData = currentAvatar;
+        selectedAvatar = 'custom';
+      } else {
+        selectedAvatar = AVATARS.some(a => a.id === currentAvatar) ? currentAvatar : 'warrior';
+      }
       const grid = document.getElementById('avatar-picker-grid');
       grid.innerHTML = AVATARS.map(a => `
         <button type="button" class="avatar-option-btn ${a.id === selectedAvatar ? 'selected' : ''}"
@@ -340,27 +385,141 @@
           <span class="avatar-option-emoji">${a.emoji}</span>
           <span class="avatar-option-label">${a.label}</span>
         </button>
-      `).join('');
+      `).join('') + `
+        <button type="button" class="avatar-option-btn avatar-option-custom ${selectedAvatar === 'custom' ? 'selected' : ''}"
+                data-avatar="custom"
+                role="radio"
+                aria-checked="${selectedAvatar === 'custom' ? 'true' : 'false'}"
+                aria-label="Custom avatar: upload an image from your device or take a photo">
+          <span class="avatar-option-emoji" id="custom-avatar-thumb"></span>
+          <span class="avatar-option-label">Custom</span>
+        </button>
+      `;
+
+      refreshCustomTile();
+      setAvatarSelection(selectedAvatar);
 
       grid.querySelectorAll('.avatar-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          selectedAvatar = btn.dataset.avatar;
-          grid.querySelectorAll('.avatar-option-btn').forEach(b => {
-            b.classList.remove('selected');
-            b.setAttribute('aria-checked', 'false');
-          });
-          btn.classList.add('selected');
-          btn.setAttribute('aria-checked', 'true');
-
-          const chosen = AVATARS.find(a => a.id === selectedAvatar);
-          if (chosen) {
-            document.getElementById('settings-avatar-preview').textContent = chosen.emoji;
+          if (btn.dataset.avatar === 'custom') {
+            if (customAvatarData) {
+              setAvatarSelection('custom');
+            } else {
+              document.getElementById('custom-avatar-file').click();
+            }
+          } else {
+            setAvatarSelection(btn.dataset.avatar);
           }
         });
       });
     };
 
     // ─── Customization Inputs ───────────────────────────────────────
+    // ─── Custom Avatar: upload / camera / crop ───────────────────
+    const cropModal = document.getElementById('avatar-crop-modal');
+    const cropStage = document.getElementById('avatar-crop-stage');
+    const cropImg = document.getElementById('avatar-crop-img');
+    const fileInput = document.getElementById('custom-avatar-file');
+    const cameraInput = document.getElementById('custom-avatar-camera');
+    let cropState = null; // { scale, x, y } — image placement in stage coordinates
+    let dragState = null;
+
+    const applyCropTransform = () => {
+      cropImg.style.transform = `translate(${cropState.x}px, ${cropState.y}px) scale(${cropState.scale})`;
+    };
+
+    const openCrop = (file) => {
+      if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
+        Utils.showToast('Please choose a PNG, JPEG, WebP or GIF image.', 'warning');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        Utils.showToast('Image is too large (max 10MB).', 'warning');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const onImgReady = () => {
+          const { width: sw, height: sh } = cropStage.getBoundingClientRect();
+          const scale = Math.max(sw / cropImg.naturalWidth, sh / cropImg.naturalHeight);
+          cropState = {
+            scale,
+            x: (sw - cropImg.naturalWidth * scale) / 2,
+            y: (sh - cropImg.naturalHeight * scale) / 2,
+          };
+          applyCropTransform();
+          cropModal.hidden = false;
+        };
+        cropImg.onload = onImgReady;
+        if (cropImg.getAttribute('src') === reader.result && cropImg.complete) {
+          onImgReady(); // same image re-picked — load event won't refire
+        } else {
+          cropImg.src = reader.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const cropToDataUrl = () => {
+      // Sample exactly the stage square from the transformed image → 256×256 JPEG (~15-60KB)
+      const OUT = 256;
+      const rect = cropStage.getBoundingClientRect();
+      const canvas = document.createElement('canvas');
+      canvas.width = OUT;
+      canvas.height = OUT;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f1420';
+      ctx.fillRect(0, 0, OUT, OUT);
+      const sx = (0 - cropState.x) / cropState.scale;
+      const sy = (0 - cropState.y) / cropState.scale;
+      const sw = rect.width / cropState.scale;
+      const sh = rect.height / cropState.scale;
+      ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, OUT, OUT);
+      return canvas.toDataURL('image/jpeg', 0.85);
+    };
+
+    cropStage.addEventListener('pointerdown', (e) => {
+      if (!cropState) return;
+      dragState = { startX: e.clientX, startY: e.clientY, ox: cropState.x, oy: cropState.y };
+      cropStage.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    cropStage.addEventListener('pointermove', (e) => {
+      if (!dragState || !cropState) return;
+      cropState.x = dragState.ox + (e.clientX - dragState.startX);
+      cropState.y = dragState.oy + (e.clientY - dragState.startY);
+      applyCropTransform();
+    });
+    ['pointerup', 'pointercancel'].forEach(ev =>
+      cropStage.addEventListener(ev, () => { dragState = null; })
+    );
+
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (f) openCrop(f);
+      fileInput.value = '';
+    });
+    cameraInput.addEventListener('change', () => {
+      const f = cameraInput.files && cameraInput.files[0];
+      if (f) openCrop(f);
+      cameraInput.value = '';
+    });
+
+    document.getElementById('avatar-crop-camera').addEventListener('click', () => cameraInput.click());
+    document.getElementById('avatar-crop-cancel').addEventListener('click', () => {
+      cropModal.hidden = true;
+      cropState = null;
+    });
+    document.getElementById('avatar-crop-use').addEventListener('click', () => {
+      if (!cropState) return;
+      customAvatarData = cropToDataUrl();
+      cropModal.hidden = true;
+      cropState = null;
+      refreshCustomTile();
+      setAvatarSelection('custom');
+      Utils.showToast('Looking sharp! Hit save to apply your custom avatar.', 'success');
+    });
+
     const renderCustomizationInputs = (p) => {
       document.getElementById('pref-username').value = p.username || '';
       document.getElementById('pref-title').value = p.title || '';
@@ -456,7 +615,7 @@
           username,
           title,
           country,
-          avatar: selectedAvatar,
+          avatar: selectedAvatar === 'custom' ? customAvatarData : selectedAvatar,
         });
 
         succEl.style.display = 'block';
