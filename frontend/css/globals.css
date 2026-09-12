@@ -211,6 +211,11 @@ a:hover { color: var(--text-primary); }
   padding: var(--space-md) 0;
 }
 
+/* Nav spans wider than the content container — 9 links + HUD need the room */
+.nav .container {
+  max-width: 1680px;
+}
+
 .nav-inner {
   display: flex;
   align-items: center;
@@ -226,6 +231,7 @@ a:hover { color: var(--text-primary); }
   text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
   letter-spacing: 0.08em;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav-links {
@@ -248,6 +254,7 @@ a:hover { color: var(--text-primary); }
   letter-spacing: 0.04em;
   transition: all var(--transition-fast);
   text-decoration: none;
+  white-space: nowrap;
 }
 .nav-link:hover,
 .nav-link.active {
@@ -996,11 +1003,14 @@ body.offline .offline-banner { display: block; }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 768px) {
-  :root { --space-xl: 20px; --space-lg: 16px; }
-  .container { padding: 0 var(--space-md); }
-  .panel { padding: var(--space-lg); }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+/* Nav: tighten before collapsing — 9 links + logo + HUD don't fit full-size below ~1580px */
+@media (max-width: 1580px) {
+  .nav-links { gap: 2px; }
+  .nav-link { padding: var(--space-xs) var(--space-sm); font-size: 0.9rem; }
+}
+
+/* Collapse to hamburger once tightened links still can't fit */
+@media (max-width: 1440px) {
   .nav-links { display: none; }
   .nav-toggle { display: flex; }
   .nav-links.open {
@@ -1015,6 +1025,13 @@ body.offline .offline-banner { display: block; }
     border-bottom: 1px solid var(--border-panel);
     z-index: var(--z-above);
   }
+}
+
+@media (max-width: 768px) {
+  :root { --space-xl: 20px; --space-lg: 16px; }
+  .container { padding: 0 var(--space-md); }
+  .panel { padding: var(--space-lg); }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
