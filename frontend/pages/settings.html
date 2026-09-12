@@ -428,36 +428,72 @@
       cropImg.style.transform = `translate(${cropState.x}px, ${cropState.y}px) scale(${cropState.scale})`;
     };
 
-    const openCrop = (file) => {
-      if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
-        Utils.showToast('Please choose a PNG, JPEG, WebP or GIF image.', 'warning');
-        return;
-      }
+    const closeCrop = () => {
+      cropModal.hidden = true;
+      cropState = null;
+      dragState = null;
+    };
+
+    // Trust the file's bytes, not its reported type — browsers label files by
+    // extension, so a renamed HEIC shows up as "image/jpeg" and breaks decode.
+    const sniffImageHeader = (file) => new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const b = new Uint8Array(r.result || []);
+        const tag = (n, len) => String.fromCharCode(...b.slice(n, n + len));
+        if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return resolve('jpeg');
+        if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return resolve('png');
+        if (tag(0, 4).startsWith('GIF8')) return resolve('gif');
+        if (tag(0, 4) === 'RIFF' && tag(8, 4) === 'WEBP') return resolve('webp');
+        resolve(null);
+      };
+      r.onerror = () => resolve(null);
+      r.readAsArrayBuffer(file.slice(0, 16));
+    });
+
+    const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('FileReader failed'));
+      reader.readAsDataURL(file);
+    });
+
+    const openCrop = async (file) => {
       if (file.size > 10 * 1024 * 1024) {
         Utils.showToast('Image is too large (max 10MB).', 'warning');
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        const onImgReady = () => {
-          const { width: sw, height: sh } = cropStage.getBoundingClientRect();
-          const scale = Math.max(sw / cropImg.naturalWidth, sh / cropImg.naturalHeight);
-          cropState = {
-            scale,
-            x: (sw - cropImg.naturalWidth * scale) / 2,
-            y: (sh - cropImg.naturalHeight * scale) / 2,
-          };
-          applyCropTransform();
-          cropModal.hidden = false;
+      if (!await sniffImageHeader(file)) {
+        Utils.showToast('That format isn\u2019t supported \u2014 use a JPG, PNG, WebP or GIF image.', 'warning');
+        return;
+      }
+      let dataUrl;
+      try {
+        dataUrl = await fileToDataUrl(file);
+      } catch {
+        Utils.showToast('Could not read that file.', 'warning');
+        return;
+      }
+      cropImg.onload = () => {
+        const { width: sw, height: sh } = cropStage.getBoundingClientRect();
+        const scale = Math.max(sw / cropImg.naturalWidth, sh / cropImg.naturalHeight);
+        cropState = {
+          scale,
+          x: (sw - cropImg.naturalWidth * scale) / 2,
+          y: (sh - cropImg.naturalHeight * scale) / 2,
         };
-        cropImg.onload = onImgReady;
-        if (cropImg.getAttribute('src') === reader.result && cropImg.complete) {
-          onImgReady(); // same image re-picked — load event won't refire
-        } else {
-          cropImg.src = reader.result;
-        }
+        applyCropTransform();
+        cropModal.hidden = false;
       };
-      reader.readAsDataURL(file);
+      cropImg.onerror = () => {
+        closeCrop();
+        Utils.showToast('Couldn\u2019t decode that image \u2014 try a different one.', 'warning');
+      };
+      if (cropImg.getAttribute('src') === dataUrl && cropImg.naturalWidth > 0) {
+        cropImg.onload(); // same image re-picked — load event won't refire
+      } else {
+        cropImg.src = dataUrl;
+      }
     };
 
     const cropToDataUrl = () => {
@@ -506,15 +542,23 @@
     });
 
     document.getElementById('avatar-crop-camera').addEventListener('click', () => cameraInput.click());
-    document.getElementById('avatar-crop-cancel').addEventListener('click', () => {
-      cropModal.hidden = true;
-      cropState = null;
+    document.getElementById('avatar-crop-cancel').addEventListener('click', closeCrop);
+    cropModal.addEventListener('click', (e) => {
+      if (e.target === cropModal) closeCrop(); // click on dimmed backdrop
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !cropModal.hidden) closeCrop();
     });
     document.getElementById('avatar-crop-use').addEventListener('click', () => {
-      if (!cropState) return;
-      customAvatarData = cropToDataUrl();
-      cropModal.hidden = true;
-      cropState = null;
+      if (!cropState || !cropImg.naturalWidth) return;
+      try {
+        customAvatarData = cropToDataUrl();
+      } catch {
+        closeCrop();
+        Utils.showToast('Something went wrong cropping that image \u2014 please try again.', 'warning');
+        return;
+      }
+      closeCrop();
       refreshCustomTile();
       setAvatarSelection('custom');
       Utils.showToast('Looking sharp! Hit save to apply your custom avatar.', 'success');
