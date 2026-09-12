@@ -1231,6 +1231,11 @@
   padding: var(--space-lg);
 }
 
+/* display:flex above overrides the UA's [hidden] { display:none } — restore it */
+.avatar-crop-overlay[hidden] {
+  display: none;
+}
+
 .avatar-crop-dialog {
   width: min(420px, 100%);
   background: var(--bg-card);
