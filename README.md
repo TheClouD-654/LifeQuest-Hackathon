@@ -1,11 +1,10 @@
 # ============================================================
-# LIFE RPG — Root README
-# Tech Zephyr 4.0 Hackathon Submission
+# LIFE QUEST — Root README
 # ============================================================
 
-# ⚔ Life RPG — Turn Your Life Into an Adventure
+# ⚔ Life Quest — Turn Your Life Into an Adventure
 
-> A full-stack "Life RPG" web application where real-world daily activities are converted into RPG-style quests, character progression, attributes, streaks, currency, rewards, and character growth.
+> A full-stack "Life Quest" web application where real-world daily activities are converted into RPG-style quests, character progression, attributes, streaks, currency, rewards, and character growth.
 
 ## 🎮 Core Features
 
@@ -165,4 +164,4 @@ XP_REQUIRED(level) = Math.floor(100 * Math.pow(level, 1.5))
 
 ---
 
-*Built for Tech Zephyr 4.0 Hackathon*
+*Life Quest — Turn Your Life Into an Adventure*
