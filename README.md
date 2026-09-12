@@ -1,5 +1,5 @@
 # =============================================
-# LIFE QUEST — Root README
+# LIFE QUEST
 # =============================================
 
 # ⚔ Life Quest — Turn Your Life Into an Adventure
