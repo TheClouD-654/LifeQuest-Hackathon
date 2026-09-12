@@ -307,8 +307,6 @@ a:hover { color: var(--text-primary); }
 /* ─── Glassmorphism Panel ─────────────────────────────────────── */
 .panel {
   background: rgba(13, 31, 60, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-panel);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
