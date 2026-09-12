@@ -14,6 +14,9 @@ const MySQLStore = require('express-mysql-session')(session);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Enable reverse proxy support for HTTPS on Render / cloud platforms
+app.set('trust proxy', 1);
+
 // ─── Database connection options for session store ────────────────────────────
 let sessionStoreOptions = {
   host: process.env.DB_HOST || 'localhost',
@@ -91,7 +94,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 }));
