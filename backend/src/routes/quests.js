@@ -10,12 +10,10 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { requireAuth } = require('../middleware/auth');
 const { calculateQuestXp, calculateQuestGold, completeQuest } = require('../services/rpgEngine');
 const { checkAndUnlockAchievements } = require('../services/achievementService');
-
-const prisma = new PrismaClient();
 
 const questValidation = [
   body('title').trim().notEmpty().isLength({ max: 100 }).withMessage('Title required (max 100 chars)'),

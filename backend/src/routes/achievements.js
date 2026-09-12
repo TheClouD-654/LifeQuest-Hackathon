@@ -1,9 +1,8 @@
 // Achievements Routes
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { requireAuth } = require('../middleware/auth');
-const prisma = new PrismaClient();
 
 // GET /api/achievements
 router.get('/', requireAuth, async (req, res) => {

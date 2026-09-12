@@ -2,8 +2,7 @@
 // RPG Engine — Core Progression Logic
 // Server-authoritative XP, leveling, streaks, attributes
 // ============================================================
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../utils/prisma');
 
 // ─── Level Formula ────────────────────────────────────────────────────────────
 // XP_REQUIRED(level) = floor(100 * level^1.5)

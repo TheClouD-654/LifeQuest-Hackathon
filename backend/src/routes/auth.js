@@ -12,10 +12,8 @@ const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { requireAuth } = require('../middleware/auth');
-
-const prisma = new PrismaClient();
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
 const signupValidation = [

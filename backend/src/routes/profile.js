@@ -5,11 +5,9 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { requireAuth } = require('../middleware/auth');
 const { calculateLevel } = require('../services/rpgEngine');
-
-const prisma = new PrismaClient();
 
 // ─── GET /api/profile ─────────────────────────────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {

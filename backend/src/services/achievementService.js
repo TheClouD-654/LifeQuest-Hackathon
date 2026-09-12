@@ -1,8 +1,7 @@
 // ============================================================
 // Achievement Service — Server-side achievement checking
 // ============================================================
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../utils/prisma');
 
 /**
  * Check and unlock achievements for a user after any significant event.

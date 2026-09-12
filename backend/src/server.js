@@ -2,6 +2,16 @@
 // LIFE RPG — Express Server Entry Point
 // ============================================================
 require('dotenv').config();
+
+// Ensure DATABASE_URL enforces TLS for TiDB Cloud / production if not already specified
+if (process.env.DATABASE_URL) {
+  const dbUrl = process.env.DATABASE_URL;
+  if ((dbUrl.includes('tidbcloud.com') || process.env.NODE_ENV === 'production' || dbUrl.includes('ssl')) && !dbUrl.includes('sslaccept=')) {
+    const separator = dbUrl.includes('?') ? '&' : '?';
+    process.env.DATABASE_URL = `${dbUrl}${separator}sslaccept=strict`;
+  }
+}
+
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
@@ -39,6 +49,8 @@ if (process.env.DATABASE_URL) {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10000,
     };
     if (parsedUrl.searchParams.has('ssl') || process.env.DATABASE_URL.includes('ssl') || process.env.NODE_ENV === 'production') {
       poolConfig.ssl = { rejectUnauthorized: false };

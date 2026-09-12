@@ -3,9 +3,8 @@
 // Generates personalized daily quests from activity data
 // Does NOT depend on external AI APIs
 // ============================================================
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const { calculateQuestXp, calculateQuestGold } = require('./rpgEngine');
-const prisma = new PrismaClient();
 
 // ─── Quest Templates ─────────────────────────────────────────────────────────
 // Each template defines a quest that can be generated based on rules
