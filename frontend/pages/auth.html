@@ -333,7 +333,10 @@
 
     // Check error from OAuth redirect
     const oauthError = params.get('error');
-    if (oauthError) {
+    if (oauthError === 'google_not_configured') {
+      showPanel('login');
+      showError('login-error', 'Google OAuth is optional. Please use Email/Password sign in below, or the demo hero: demo@liferpg.dev / demo1234');
+    } else if (oauthError) {
       showPanel('login');
       showError('login-error', 'Google sign-in failed. Please try again or use email.');
     }

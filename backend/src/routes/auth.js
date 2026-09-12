@@ -133,21 +133,28 @@ router.get('/me', requireAuth, async (req, res) => {
 });
 
 // ─── GET /api/auth/google ─────────────────────────────────────────────────────
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+router.get('/google', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    const redirectBase = process.env.FRONTEND_URL || '';
+    return res.redirect(`${redirectBase}/pages/auth.html?error=google_not_configured`);
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
 // ─── GET /api/auth/google/callback ───────────────────────────────────────────
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/pages/auth.html?error=google_failed` }),
-  (req, res) => {
+router.get('/google/callback', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    const redirectBase = process.env.FRONTEND_URL || '';
+    return res.redirect(`${redirectBase}/pages/auth.html?error=google_not_configured`);
+  }
+  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || ''}/pages/auth.html?error=google_failed` })(req, res, () => {
     const needsProfile = !req.user.profile;
     if (needsProfile) {
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/pages/character.html`);
+      res.redirect(`${process.env.FRONTEND_URL || ''}/pages/character.html`);
     } else {
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/pages/dashboard.html`);
+      res.redirect(`${process.env.FRONTEND_URL || ''}/pages/dashboard.html`);
     }
-  }
-);
+  });
+});
 
 module.exports = router;
