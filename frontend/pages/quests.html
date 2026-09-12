@@ -16,17 +16,17 @@
     <div class="container nav-inner">
       <a href="/" class="nav-logo">⚔ LIFE QUEST</a>
       <ul class="nav-links" id="nav-links" role="list">
-        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
-        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
-        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
-        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
-        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
-        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
-        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
       </ul>
       <div style="display:flex;align-items:center;gap:var(--space-md)">
-        <span class="nav-level" id="nav-level">LV 1</span>
-        <div class="gold-display" id="nav-gold"><div class="gold-coin"></div><span data-gold>0</span></div>
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -129,6 +129,7 @@
 
   <script src="../js/api/api.js"></script>
   <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
   <script src="../js/animations/questComplete.js"></script>
   <script>
     Utils.initParticles();
@@ -141,9 +142,7 @@
       const user = await Utils.checkProfileOrRedirect();
       if (!user) return;
       if (user.profile) {
-        document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
-        const goldEl = document.querySelector('[data-gold]');
-        if (goldEl) goldEl.textContent = Utils.formatNumber(user.profile.gold);
+        Utils.updateNavCharacter(user.profile);
       }
       loadQuests();
     })();

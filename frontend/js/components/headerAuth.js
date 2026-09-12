@@ -25,6 +25,8 @@
 
   let currentUser = null;
   let activeDropdown = null;
+  let activeContainer = null;
+  let isAppNavigation = false;
 
   /**
    * Render loading skeleton into the auth slot to prevent layout shift and auth flash
@@ -53,7 +55,7 @@
   /**
    * Render authenticated RPG profile control and popover
    */
-  const renderLoggedIn = (container, user, heroCta) => {
+  const renderLoggedIn = (container, user, heroCta, isAppNav = false) => {
     const prof = user.profile || user.character || {};
     const hasProfile = !user.needsProfile && prof.username;
 
@@ -62,17 +64,22 @@
     const charGold = typeof prof.gold === 'number' ? prof.gold : 100;
     const charAvatar = AVATAR_EMOJIS[prof.avatar] || '⚔';
     const charClass = CLASS_LABELS[prof.class] || prof.class || (hasProfile ? 'Novice' : 'Setup Pending');
-    const charTitle = prof.title ? ` • ${prof.title}` : '';
+    const charTitle = prof.title ? ` • "${prof.title}"` : '';
 
     const dashboardUrl = hasProfile ? '/pages/dashboard.html' : '/pages/character.html';
-    const dashboardLabel = hasProfile ? 'Character / Dashboard' : 'Character Setup';
+    const profileUrl = hasProfile ? '/pages/profile.html' : '/pages/character.html';
+
+    const ctaButtonHtml = (!isAppNav && !hasProfile)
+      ? `<a href="/pages/character.html" class="btn btn-primary btn-sm nav-dashboard-cta" id="nav-dashboard-link">Setup Character</a>`
+      : (!isAppNav
+        ? `<a href="${dashboardUrl}" class="btn btn-primary btn-sm nav-dashboard-cta" id="nav-dashboard-link">Dashboard</a>`
+        : '');
 
     container.innerHTML = `
-      <a href="${dashboardUrl}" class="btn btn-primary btn-sm nav-dashboard-cta" id="nav-dashboard-link">
-        Dashboard
-      </a>
+      ${ctaButtonHtml}
       <div class="nav-profile-control" id="nav-profile-control">
         <button class="nav-profile-trigger" id="nav-profile-trigger"
+                type="button"
                 aria-haspopup="true"
                 aria-expanded="false"
                 aria-controls="nav-profile-dropdown"
@@ -98,17 +105,29 @@
             </div>
           </div>
           <div class="nav-profile-divider"></div>
-          <a href="${dashboardUrl}" class="nav-profile-item" role="menuitem">
+          <a href="${profileUrl}" class="nav-profile-item" role="menuitem">
+            <span class="item-icon">👤</span>
+            <span class="item-text">Character Profile</span>
+          </a>
+          <a href="/pages/dashboard.html" class="nav-profile-item" role="menuitem">
             <span class="item-icon">📊</span>
-            <span class="item-text">${dashboardLabel}</span>
+            <span class="item-text">Status / Dashboard</span>
           </a>
           <a href="/pages/quests.html" class="nav-profile-item" role="menuitem">
             <span class="item-icon">⚔</span>
             <span class="item-text">Quests</span>
           </a>
+          <a href="/pages/activity.html" class="nav-profile-item" role="menuitem">
+            <span class="item-icon">📈</span>
+            <span class="item-text">Activity</span>
+          </a>
           <a href="/pages/stats.html" class="nav-profile-item" role="menuitem">
             <span class="item-icon">🏆</span>
             <span class="item-text">Stats</span>
+          </a>
+          <a href="/pages/shop.html" class="nav-profile-item" role="menuitem">
+            <span class="item-icon">🛡</span>
+            <span class="item-text">Armory</span>
           </a>
           <a href="/pages/inventory.html" class="nav-profile-item" role="menuitem">
             <span class="item-icon">🎒</span>
@@ -127,7 +146,7 @@
       </div>
     `;
 
-    // Update Hero CTA
+    // Update Hero CTA if present
     if (heroCta) {
       heroCta.textContent = hasProfile ? '⚔ Go to Dashboard' : '⚔ Create Character';
       heroCta.href = dashboardUrl;
@@ -193,9 +212,13 @@
           console.warn('Logout request completed with notice:', err);
         } finally {
           currentUser = null;
-          renderLoggedOut(container, heroCta);
-          if (typeof Utils !== 'undefined' && Utils.showToast) {
-            Utils.showToast('Logged out successfully', 'info');
+          if (isAppNav) {
+            window.location.href = '/';
+          } else {
+            renderLoggedOut(container, heroCta);
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+              Utils.showToast('Logged out successfully', 'info');
+            }
           }
         }
       });
@@ -208,10 +231,12 @@
   const init = async (options = {}) => {
     const containerId = options.containerId || 'nav-auth-slot';
     const heroCtaId = options.heroCtaId || 'hero-cta-start';
+    isAppNavigation = !!options.isAppNav;
 
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) return null;
 
+    activeContainer = container;
     const heroCta = document.getElementById(heroCtaId);
 
     // Render initial skeleton placeholder if empty
@@ -222,7 +247,7 @@
     try {
       if (typeof API === 'undefined' || !API.auth || !API.auth.me) {
         renderLoggedOut(container, heroCta);
-        return;
+        return null;
       }
 
       // Query existing server session
@@ -230,20 +255,51 @@
 
       if (user && user.id) {
         currentUser = user;
-        renderLoggedIn(container, user, heroCta);
+        renderLoggedIn(container, user, heroCta, isAppNavigation);
+        return user;
       } else {
         currentUser = null;
         renderLoggedOut(container, heroCta);
+        return null;
       }
     } catch (err) {
-      // 401 unauthenticated or network error -> show logged out buttons
       currentUser = null;
-      renderLoggedOut(container, heroCta);
+      if (isAppNavigation) {
+        // App page requires authentication
+        window.location.href = '/pages/auth.html';
+      } else {
+        renderLoggedOut(container, heroCta);
+      }
+      return null;
+    }
+  };
+
+  /**
+   * Synchronize local character identity immediately when updated in settings or profile
+   */
+  const syncUser = (updatedData = {}) => {
+    if (!currentUser) return;
+    if (updatedData.profile) {
+      currentUser.profile = { ...currentUser.profile, ...updatedData.profile };
+      if (currentUser.character) {
+        currentUser.character = { ...currentUser.character, ...updatedData.profile };
+      }
+    } else {
+      currentUser.profile = { ...currentUser.profile, ...updatedData };
+      if (currentUser.character) {
+        currentUser.character = { ...currentUser.character, ...updatedData };
+      }
+    }
+
+    if (activeContainer) {
+      const heroCta = document.getElementById('hero-cta-start');
+      renderLoggedIn(activeContainer, currentUser, heroCta, isAppNavigation);
     }
   };
 
   window.HeaderAuth = {
     init,
+    syncUser,
     getCurrentUser: () => currentUser,
   };
 })();

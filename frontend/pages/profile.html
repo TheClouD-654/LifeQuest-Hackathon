@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Quest — Character Profile</title>
+  <meta name="description" content="View your character profile, core attributes, journey summary, equipped gear, and achievements in Life Quest.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
+      </ul>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)" id="main-content">
+    <div class="container">
+
+      <!-- Loading State -->
+      <div id="loading-state" class="loading-full" aria-label="Loading character profile">
+        <div class="spinner" style="width:48px;height:48px;border-width:3px"></div>
+        <p class="text-muted">Loading your character sheet...</p>
+      </div>
+
+      <!-- Profile Container (Hidden during load) -->
+      <div id="profile-content" style="display:none">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md)">
+          <div>
+            <h1 class="page-title">👤 Character Profile</h1>
+            <p class="page-subtitle">Your RPG identity, core attributes, journey statistics, and milestones.</p>
+          </div>
+          <a href="/pages/settings.html" class="btn btn-ghost btn-sm" id="edit-profile-cta">
+            ⚙ Customize Character
+          </a>
+        </div>
+
+        <div class="profile-page-grid">
+          <!-- Left Column: Character Status Card -->
+          <div class="profile-sticky-card">
+            <div class="profile-hero-card">
+              <div class="profile-avatar-wrapper">
+                <div class="profile-avatar-large" id="profile-avatar">🧙</div>
+                <div class="profile-class-badge" id="profile-class">WARRIOR</div>
+              </div>
+
+              <h2 class="profile-char-name" id="profile-username">Adventurer</h2>
+              <div class="profile-char-title" id="profile-title">"Novice"</div>
+
+              <div class="profile-level-badge-large" id="profile-level-badge">
+                <span>⭐</span> <span id="profile-level-text">LEVEL 1</span>
+              </div>
+
+              <!-- XP Bar -->
+              <div id="profile-xp-bar" style="width:100%;margin-top:var(--space-xs)"></div>
+
+              <!-- Meta Chips -->
+              <div class="profile-meta-chips">
+                <div class="profile-meta-chip">
+                  <span>🪙</span>
+                  <span><strong id="profile-gold">0</strong> Gold</span>
+                </div>
+                <div class="profile-meta-chip">
+                  <span>🔥</span>
+                  <span><strong id="profile-streak">0</strong> Day Streak</span>
+                </div>
+                <div class="profile-meta-chip">
+                  <span>🌟</span>
+                  <span>Best: <strong id="profile-longest-streak">0</strong> Days</span>
+                </div>
+                <div class="profile-meta-chip" id="profile-member-since-chip">
+                  <span>📅</span>
+                  <span>Journey: <strong id="profile-member-since">Today</strong></span>
+                </div>
+                <div class="profile-meta-chip" id="profile-auth-method-chip">
+                  <span id="profile-auth-icon">🛡</span>
+                  <span id="profile-auth-text">Email Account</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Equipped Gear Quick Card -->
+            <div class="panel">
+              <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center">
+                <span class="panel-title" style="font-size:0.85rem">🛡 Equipped Gear</span>
+                <a href="/pages/inventory.html" class="text-cyan text-xs font-bold" style="text-decoration:none">Manage →</a>
+              </div>
+              <div id="equipped-gear-list" style="display:flex;flex-direction:column;gap:var(--space-sm);margin-top:var(--space-sm)">
+                <p class="text-muted text-xs">Loading gear...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Attributes, Journey Summary, Achievements -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-xl)">
+            
+            <!-- 1. All Six Attributes Sheet -->
+            <section aria-labelledby="attributes-heading" class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title" id="attributes-heading">⚔ Core RPG Attributes</h2>
+                <span class="text-muted text-xs">Derived from your real-world activities & quests</span>
+              </div>
+              <div class="attr-sheet-grid" id="attributes-grid">
+                <!-- Dynamically populated -->
+              </div>
+            </section>
+
+            <!-- 2. Journey Progression Summary -->
+            <section aria-labelledby="journey-heading" class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title" id="journey-heading">📈 Journey Summary</h2>
+                <span class="text-muted text-xs">Cumulative accomplishments across your legend</span>
+              </div>
+              <div class="journey-metrics-grid" id="journey-metrics-grid">
+                <!-- Dynamically populated -->
+              </div>
+            </section>
+
+            <!-- 3. Achievements & Milestones Showcase -->
+            <section aria-labelledby="achievements-heading" class="panel">
+              <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-xs)">
+                <div>
+                  <h2 class="panel-title" id="achievements-heading">🏆 Achievements & Milestones</h2>
+                  <span class="text-muted text-xs" id="achievements-count-label">Loading milestones...</span>
+                </div>
+                <a href="/pages/stats.html" class="text-cyan text-xs font-bold" style="text-decoration:none">Full Stats →</a>
+              </div>
+              <div id="achievements-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--space-md);margin-top:var(--space-md)">
+                <!-- Dynamically populated -->
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../js/api/api.js"></script>
+  <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
+  <script>
+    Utils.initParticles();
+    Utils.initNav('profile');
+
+    const AVATAR_EMOJIS = {
+      scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️',
+      mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙',
+    };
+
+    const CLASS_LABELS = {
+      SCHOLAR: '📚 Scholar', WARRIOR: '⚔️ Warrior',
+      GUARDIAN: '🛡️ Guardian', ROGUE: '🗡️ Rogue',
+    };
+
+    const ATTR_DETAILS = [
+      { key: 'intellect',  label: 'Intellect',  icon: '🧠', desc: 'Problem solving, critical thinking & mental acuity' },
+      { key: 'strength',   label: 'Strength',   icon: '💪', desc: 'Physical endurance, athletic training & raw power' },
+      { key: 'discipline', label: 'Discipline', icon: '🎯', desc: 'Habit consistency, daily routine & self-mastery' },
+      { key: 'vitality',   label: 'Vitality',   icon: '❤️', desc: 'Restorative sleep, physical wellness & recovery' },
+      { key: 'focus',      label: 'Focus',      icon: '⚡', desc: 'Deep work sessions, concentration & flow state' },
+      { key: 'social',     label: 'Social',     icon: '🤝', desc: 'Meaningful connections, networking & teamwork' },
+    ];
+
+    const loadProfile = async () => {
+      try {
+        const user = await Utils.checkProfileOrRedirect();
+        if (!user) return;
+
+        // Fetch profile, attributes, achievements, and stats in parallel
+        const [profileData, attrsData, achievementsList] = await Promise.all([
+          API.profile.get(),
+          API.attributes.get(),
+          API.achievements.list(),
+        ]);
+
+        renderCharacterCard(profileData);
+        renderAttributes(attrsData);
+        renderJourneySummary(profileData);
+        renderEquippedGear(profileData.equippedItems || []);
+        renderAchievements(achievementsList || []);
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('profile-content').style.display = 'block';
+        document.getElementById('profile-content').classList.add('page-enter');
+
+        // Sync with universal navbar HUD
+        Utils.updateNavCharacter(profileData);
+
+      } catch (err) {
+        console.error('Profile load error:', err);
+        document.getElementById('loading-state').innerHTML = `
+          <div class="error-state">
+            <span style="font-size:2rem">⚠</span>
+            <h3 style="font-family:var(--font-display)">Could Not Load Character Sheet</h3>
+            <p class="text-muted">${err.message || 'Please check your connection and try again.'}</p>
+            <button class="btn btn-primary" onclick="location.reload()">↻ Retry</button>
+          </div>
+        `;
+      }
+    };
+
+    // ─── Render Character Card ──────────────────────────────────────
+    const renderCharacterCard = (p) => {
+      const avatarEl = document.getElementById('profile-avatar');
+      avatarEl.textContent = AVATAR_EMOJIS[p.avatar] || '🧙';
+
+      document.getElementById('profile-class').textContent = (p.class || 'WARRIOR').toUpperCase();
+      document.getElementById('profile-username').textContent = p.username || 'Adventurer';
+      document.getElementById('profile-title').textContent = p.title ? `"${p.title}"` : '"Novice"';
+      document.getElementById('profile-level-text').textContent = `LEVEL ${p.level || 1}`;
+
+      // XP progress bar
+      const xpRequired = p.xpRequired || 100;
+      const currentXp = p.currentXp || 0;
+      document.getElementById('profile-xp-bar').innerHTML = Utils.buildXPBar(currentXp, xpRequired, p.level || 1);
+
+      // Gold & Streaks
+      document.getElementById('profile-gold').textContent = Utils.formatNumber(p.gold || 0);
+      document.getElementById('profile-streak').textContent = p.currentStreak || 0;
+      document.getElementById('profile-longest-streak').textContent = p.longestStreak || 0;
+
+      // Journey start date
+      if (p.account?.createdAt) {
+        const date = new Date(p.account.createdAt);
+        document.getElementById('profile-member-since').textContent = date.toLocaleDateString('en-US', {
+          month: 'short',
+          year: 'numeric',
+        });
+      }
+
+      // Auth method
+      if (p.account?.authMethod) {
+        document.getElementById('profile-auth-icon').textContent = p.account.authMethod === 'Google' ? '🌐' : '🔒';
+        document.getElementById('profile-auth-text').textContent = `${p.account.authMethod} Auth`;
+      }
+    };
+
+    // ─── Render Attributes ──────────────────────────────────────────
+    const renderAttributes = (attrs) => {
+      const grid = document.getElementById('attributes-grid');
+      grid.innerHTML = ATTR_DETAILS.map(attr => {
+        const val = attrs?.[attr.key] || 10;
+        const pct = Math.min((val / 200) * 100, 100);
+        return `
+          <div class="attr-card">
+            <div class="attr-card-header">
+              <div class="attr-card-title">
+                <span>${attr.icon}</span>
+                <span>${attr.label}</span>
+              </div>
+              <span class="attr-card-val">${val}</span>
+            </div>
+            <div class="attr-track" role="progressbar" aria-label="${attr.label} ${val}" aria-valuenow="${val}" aria-valuemin="0" aria-valuemax="200">
+              <div class="attr-fill ${attr.key}" style="width:${pct}%"></div>
+            </div>
+            <div class="attr-card-desc">${attr.desc}</div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    // ─── Render Journey Summary ─────────────────────────────────────
+    const renderJourneySummary = (p) => {
+      const stats = p.stats || {};
+      const grid = document.getElementById('journey-metrics-grid');
+
+      const metrics = [
+        { icon: '⚔', value: Utils.formatNumber(stats.completedQuests || 0), label: 'Quests Completed' },
+        { icon: '📋', value: Utils.formatNumber(stats.totalQuests || 0), label: 'Quests Attempted' },
+        { icon: '⚡', value: Utils.formatNumber(p.totalXp || 0), label: 'Total XP Earned' },
+        { icon: '🪙', value: Utils.formatNumber(p.gold || 0), label: 'Current Gold' },
+        { icon: '🔥', value: `${p.currentStreak || 0}d`, label: 'Current Streak' },
+        { icon: '🌟', value: `${p.longestStreak || 0}d`, label: 'Best Streak' },
+        { icon: '🏆', value: `${stats.achievementsUnlocked || 0}`, label: 'Milestones Unlocked' },
+        { icon: '🎯', value: `${stats.completionRate || 0}%`, label: 'Completion Rate' },
+      ];
+
+      grid.innerHTML = metrics.map(m => `
+        <div class="metric-tile">
+          <div class="metric-tile-icon">${m.icon}</div>
+          <div class="metric-tile-value">${m.value}</div>
+          <div class="metric-tile-label">${m.label}</div>
+        </div>
+      `).join('');
+    };
+
+    // ─── Render Equipped Gear ───────────────────────────────────────
+    const renderEquippedGear = (items) => {
+      const container = document.getElementById('equipped-gear-list');
+      if (!items || items.length === 0) {
+        container.innerHTML = `
+          <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-md);text-align:center">
+            <p class="text-muted text-xs">No cosmetics or items currently equipped.</p>
+            <a href="/pages/shop.html" class="btn btn-ghost btn-sm mt-xs" style="font-size:0.75rem;padding:4px 10px">Visit Armory</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="gear-slot-card has-item">
+          <div class="gear-slot-icon">🛡</div>
+          <div>
+            <div class="gear-slot-name">${item.name}</div>
+            <div class="gear-slot-type">${item.type} • ${item.rarity}</div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // ─── Render Achievements ────────────────────────────────────────
+    const renderAchievements = (achievementsList) => {
+      const container = document.getElementById('achievements-container');
+      const unlockedCount = achievementsList.filter(a => a.unlocked).length;
+      document.getElementById('achievements-count-label').textContent = `${unlockedCount} of ${achievementsList.length} Unlocked`;
+
+      if (!achievementsList || achievementsList.length === 0) {
+        container.innerHTML = `<p class="text-muted text-xs">No achievements defined.</p>`;
+        return;
+      }
+
+      const ICONS = {
+        QUEST_COUNT: '⚔', LEVEL: '⬆', STREAK: '🔥', LONGEST_STREAK: '🔥',
+        GOLD: '🪙', INTELLECT: '🧠', STRENGTH: '💪', DISCIPLINE: '🎯', TOTAL_XP: '⚡',
+      };
+
+      container.innerHTML = achievementsList.map(a => {
+        const icon = ICONS[a.requirementType] || '🏆';
+        if (a.unlocked) {
+          return `
+            <div class="achievement-card unlocked" style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md)">
+              <div class="achievement-icon" style="font-size:1.8rem">${icon}</div>
+              <div style="flex:1">
+                <div class="achievement-name" style="font-size:0.95rem;font-weight:700">${a.name}</div>
+                <div class="achievement-desc" style="font-size:0.78rem;color:var(--text-secondary)">${a.description}</div>
+                <div class="achievement-unlocked-at" style="font-size:0.7rem;color:var(--accent-cyan);margin-top:2px">✓ Unlocked ${Utils.formatDate(a.unlockedAt)}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="achievement-card locked" style="display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);opacity:0.55;border-style:dashed">
+              <div class="achievement-icon" style="font-size:1.8rem;filter:grayscale(1)">🔒</div>
+              <div style="flex:1">
+                <div class="achievement-name" style="font-size:0.95rem;font-weight:700;color:var(--text-muted)">${a.name}</div>
+                <div class="achievement-desc" style="font-size:0.78rem;color:var(--text-muted)">${a.description}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">Requirement: ${a.requirementValue} ${a.requirementType.toLowerCase()}</div>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    };
+
+    // Initialize profile sheet
+    loadProfile();
+  </script>
+</body>
+</html>

@@ -52,6 +52,7 @@
     <div class="container nav-inner">
       <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
       <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
         <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
         <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
         <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
@@ -61,8 +62,7 @@
         <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
       </ul>
       <div style="display:flex;align-items:center;gap:var(--space-md)">
-        <span class="nav-level" id="nav-level" aria-label="Character level">LV 1</span>
-        <div class="gold-display" id="nav-gold" aria-label="Gold amount"><div class="gold-coin" aria-hidden="true"></div><span data-gold>0</span></div>
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
         </button>
@@ -197,6 +197,7 @@
 
   <script src="../js/api/api.js"></script>
   <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
   <script src="../js/animations/questComplete.js"></script>
   <script>
     Utils.initParticles();

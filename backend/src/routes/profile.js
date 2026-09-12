@@ -12,15 +12,69 @@ const { calculateLevel } = require('../services/rpgEngine');
 // ─── GET /api/profile ─────────────────────────────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const profile = await prisma.profile.findUnique({
-      where: { userId: req.user.id },
-    });
+    const [profile, attributes, user, userSettings, totalQuests, completedQuests, achievementsUnlocked, equippedInventory] = await Promise.all([
+      prisma.profile.findUnique({ where: { userId: req.user.id } }),
+      prisma.attribute.findUnique({ where: { userId: req.user.id } }),
+      prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { id: true, email: true, googleId: true, createdAt: true },
+      }),
+      prisma.userSettings.findUnique({ where: { userId: req.user.id } }),
+      prisma.quest.count({ where: { userId: req.user.id, status: { not: 'DELETED' } } }),
+      prisma.quest.count({ where: { userId: req.user.id, status: 'COMPLETED' } }),
+      prisma.userAchievement.count({ where: { userId: req.user.id } }),
+      prisma.inventory.findMany({
+        where: { userId: req.user.id, equipped: true },
+        include: { item: true },
+      }),
+    ]);
+
     if (!profile) return res.status(404).json({ error: 'Profile not found', code: 'NO_PROFILE' });
 
     const levelData = calculateLevel(profile.totalXp);
-    res.json({ ...profile, ...levelData });
+
+    const goalsList = userSettings?.goals
+      ? (Array.isArray(userSettings.goals) ? userSettings.goals : userSettings.goals.split(',').map(g => g.trim()).filter(Boolean))
+      : ['CODING', 'STUDY'];
+
+    res.json({
+      ...profile,
+      ...levelData,
+      attributes: attributes || null,
+      account: {
+        id: user?.id,
+        email: user?.email,
+        authMethod: user?.googleId ? 'Google' : 'Email',
+        createdAt: user?.createdAt,
+      },
+      settings: {
+        theme: userSettings?.theme || 'dark',
+        notificationsEnabled: userSettings?.notificationsEnabled ?? true,
+        activityTrackingEnabled: userSettings?.activityTrackingEnabled ?? true,
+        goals: goalsList,
+      },
+      stats: {
+        totalQuests,
+        completedQuests,
+        completionRate: totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0,
+        achievementsUnlocked,
+        currentStreak: profile.currentStreak,
+        longestStreak: profile.longestStreak,
+        totalXp: profile.totalXp,
+        gold: profile.gold,
+      },
+      equippedItems: equippedInventory.map(inv => ({
+        id: inv.id,
+        itemId: inv.itemId,
+        name: inv.item.name,
+        type: inv.item.type,
+        rarity: inv.item.rarity,
+        assetKey: inv.item.assetKey,
+        description: inv.item.description,
+      })),
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Fetch profile error:', err);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
@@ -99,26 +153,82 @@ router.post('/create', requireAuth, [
 
 // ─── PATCH /api/profile ────────────────────────────────────────────────────────
 router.patch('/', requireAuth, [
+  body('username').optional().trim().isLength({ min: 2, max: 20 }).withMessage('Username must be 2–20 characters')
+    .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, underscores'),
   body('avatar').optional().isString(),
   body('title').optional().isString().isLength({ max: 50 }),
+  body('goals').optional(),
+  body('theme').optional().isString(),
+  body('notificationsEnabled').optional().isBoolean(),
+  body('activityTrackingEnabled').optional().isBoolean(),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ error: errors.array()[0].msg });
 
-  const allowed = ['avatar', 'title'];
-  const updates = {};
-  for (const key of allowed) {
-    if (req.body[key] !== undefined) updates[key] = req.body[key];
-  }
+  const { username, avatar, title, goals, theme, notificationsEnabled, activityTrackingEnabled } = req.body;
 
   try {
-    const profile = await prisma.profile.update({
-      where: { userId: req.user.id },
-      data: updates,
+    const profileUpdates = {};
+    if (avatar !== undefined) profileUpdates.avatar = avatar;
+    if (title !== undefined) profileUpdates.title = title;
+
+    if (username !== undefined) {
+      // Check if username is already taken by someone else
+      const existing = await prisma.profile.findFirst({
+        where: {
+          username,
+          userId: { not: req.user.id },
+        },
+      });
+      if (existing) {
+        return res.status(409).json({ error: 'Username is already taken by another adventurer.' });
+      }
+      profileUpdates.username = username;
+    }
+
+    let updatedProfile = null;
+    if (Object.keys(profileUpdates).length > 0) {
+      updatedProfile = await prisma.profile.update({
+        where: { userId: req.user.id },
+        data: profileUpdates,
+      });
+    } else {
+      updatedProfile = await prisma.profile.findUnique({ where: { userId: req.user.id } });
+    }
+
+    // Handle settings updates
+    const settingsUpdates = {};
+    if (goals !== undefined) {
+      const goalsStr = Array.isArray(goals) ? goals.join(',') : String(goals);
+      settingsUpdates.goals = goalsStr;
+    }
+    if (theme !== undefined) settingsUpdates.theme = theme;
+    if (notificationsEnabled !== undefined) settingsUpdates.notificationsEnabled = !!notificationsEnabled;
+    if (activityTrackingEnabled !== undefined) settingsUpdates.activityTrackingEnabled = !!activityTrackingEnabled;
+
+    let updatedSettings = null;
+    if (Object.keys(settingsUpdates).length > 0) {
+      updatedSettings = await prisma.userSettings.upsert({
+        where: { userId: req.user.id },
+        update: settingsUpdates,
+        create: {
+          userId: req.user.id,
+          goals: settingsUpdates.goals || 'CODING,STUDY',
+          theme: settingsUpdates.theme || 'dark',
+          notificationsEnabled: settingsUpdates.notificationsEnabled ?? true,
+          activityTrackingEnabled: settingsUpdates.activityTrackingEnabled ?? true,
+        },
+      });
+    }
+
+    const levelData = calculateLevel(updatedProfile.totalXp);
+    res.json({
+      ...updatedProfile,
+      ...levelData,
+      settings: updatedSettings,
     });
-    res.json(profile);
   } catch (err) {
-    console.error(err);
+    console.error('Update profile error:', err);
     res.status(500).json({ error: 'Failed to update profile.' });
   }
 });

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Life Quest — Settings</title>
+  <title>Life Quest — Settings & Character Customization</title>
+  <meta name="description" content="Manage your Life Quest account, customize your character avatar and title, configure gameplay preferences, and update your life goals.">
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
   <link rel="stylesheet" href="../css/globals.css">
@@ -12,253 +13,524 @@
 </head>
 <body>
   <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
   <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="container nav-inner">
-      <a href="/" class="nav-logo">⚔ LIFE QUEST</a>
+      <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
       <ul class="nav-links" id="nav-links" role="list">
-        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
-        <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
-        <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
-        <li><a href="/pages/stats.html" class="nav-link" data-page="stats">🏆 Stats</a></li>
-        <li><a href="/pages/shop.html" class="nav-link" data-page="shop">🛡 Armory</a></li>
-        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory">🎒 Inventory</a></li>
-        <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
+        <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard" aria-label="Dashboard">📊 Status</a></li>
+        <li><a href="/pages/quests.html" class="nav-link" data-page="quests" aria-label="Quests">⚔ Quests</a></li>
+        <li><a href="/pages/activity.html" class="nav-link" data-page="activity" aria-label="Activity">📈 Activity</a></li>
+        <li><a href="/pages/stats.html" class="nav-link" data-page="stats" aria-label="Stats">🏆 Stats</a></li>
+        <li><a href="/pages/shop.html" class="nav-link" data-page="shop" aria-label="Armory">🛡 Armory</a></li>
+        <li><a href="/pages/inventory.html" class="nav-link" data-page="inventory" aria-label="Inventory">🎒 Inventory</a></li>
+        <li><a href="/pages/settings.html" class="nav-link" data-page="settings" aria-label="Settings">⚙ Settings</a></li>
       </ul>
       <div style="display:flex;align-items:center;gap:var(--space-md)">
-        <span class="nav-level" id="nav-level">LV 1</span>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </div>
   </nav>
 
-  <main style="padding:var(--space-xl) 0 var(--space-3xl)">
-    <div class="container" style="max-width:700px">
-      <div class="page-header">
-        <h1 class="page-title">⚙ Settings</h1>
-        <p class="page-subtitle">Manage your account and preferences.</p>
-      </div>
-
-      <!-- Account Info -->
-      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Account information">
-        <div class="section-title">Account</div>
-        <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg)">
-          <div id="settings-avatar" style="width:60px;height:60px;border-radius:50%;background:var(--bg-elevated);border:2px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:1.8rem">🧙</div>
-          <div>
-            <div id="settings-username" style="font-family:var(--font-display);font-size:1.1rem"></div>
-            <div id="settings-email" class="text-muted text-sm"></div>
-            <div id="settings-class" class="text-sm text-cyan" style="margin-top:2px"></div>
-          </div>
+  <main style="padding:var(--space-xl) 0 var(--space-3xl)" id="main-content">
+    <div class="container" style="max-width:800px">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md)">
+        <div>
+          <h1 class="page-title">⚙ Settings & Customization</h1>
+          <p class="page-subtitle">Configure your RPG character identity, gameplay preferences, and life goals.</p>
         </div>
-        <button class="btn btn-danger btn-sm" id="logout-btn" aria-label="Log out of your account">
-          Log Out
-        </button>
+        <a href="/pages/profile.html" class="btn btn-ghost btn-sm" id="view-profile-cta">
+          👤 View Character Sheet
+        </a>
       </div>
 
-      <!-- Profile Settings -->
-      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Profile settings">
-        <div class="section-title">Update Profile</div>
-        <form id="profile-form" novalidate>
-          <div id="profile-error" class="form-error mb-md" style="display:none" role="alert"></div>
-          <div id="profile-success" class="mb-md" style="display:none;color:var(--diff-easy);font-size:0.875rem" role="status"></div>
+      <!-- Loading State -->
+      <div id="loading-state" class="loading-full" aria-label="Loading settings">
+        <div class="spinner" style="width:40px;height:40px;border-width:3px"></div>
+        <p class="text-muted">Loading your settings...</p>
+      </div>
 
-          <div class="form-group">
-            <label class="form-label" for="pref-username">Display Name</label>
-            <input type="text" id="pref-username" class="form-input" maxlength="20" minlength="2">
+      <div id="settings-content" style="display:none;flex-direction:column;gap:var(--space-xl)">
+
+        <!-- 1. Account & Identity Overview -->
+        <section class="panel" aria-labelledby="account-heading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="account-heading">📜 Account & Identity</h2>
+            <span class="text-muted text-xs">Your registered adventurer credentials</span>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="pref-title">Custom Title</label>
-            <input type="text" id="pref-title" class="form-input" placeholder="e.g. The Relentless" maxlength="40">
+          <div style="display:flex;align-items:center;gap:var(--space-lg);margin-bottom:var(--space-lg);flex-wrap:wrap">
+            <div id="settings-avatar-preview" style="width:72px;height:72px;border-radius:50%;background:var(--bg-elevated);border:2.5px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 16px rgba(0,212,255,0.25)">🧙</div>
+            <div style="flex:1;min-width:200px">
+              <div id="settings-username" style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--text-primary)">Adventurer</div>
+              <div id="settings-email" class="text-muted text-sm">email@test.dev</div>
+              <div style="display:flex;gap:var(--space-sm);align-items:center;margin-top:6px;flex-wrap:wrap">
+                <span id="settings-class-badge" class="reward-chip xp" style="font-size:0.75rem">⚔ WARRIOR</span>
+                <span id="settings-auth-badge" class="reward-chip gold" style="font-size:0.75rem">🔒 Email Auth</span>
+                <span id="settings-member-since" class="text-muted text-xs">Joined Today</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="account-logout-btn" style="color:var(--diff-hard);border-color:rgba(239,68,68,0.3)">
+              Log Out
+            </button>
+          </div>
+        </section>
+
+        <!-- 2. Character Customization -->
+        <section class="panel" aria-labelledby="customization-heading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="customization-heading">🎨 Character Customization</h2>
+            <span class="text-muted text-xs">Personalize your adventurer's appearance and title</span>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="save-profile-btn">Save Changes</button>
-        </form>
-      </div>
+          <form id="customization-form" novalidate>
+            <div id="customization-error" class="form-error mb-md" style="display:none" role="alert"></div>
+            <div id="customization-success" class="mb-md" style="display:none;color:var(--diff-easy);font-size:0.875rem" role="status"></div>
 
-      <!-- Goals Update -->
-      <div class="panel" style="margin-bottom:var(--space-lg)" aria-label="Goals settings">
-        <div class="section-title">Update Goals</div>
-        <p class="text-muted text-sm mb-md">These guide your daily quest generation.</p>
+            <!-- Avatar Picker -->
+            <div class="form-group">
+              <label class="form-label" id="avatar-picker-label">Choose Character Avatar</label>
+              <div class="avatar-picker-grid" id="avatar-picker-grid" role="radiogroup" aria-labelledby="avatar-picker-label">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
 
-        <div id="goals-grid" class="goals-grid" style="display:flex;flex-wrap:wrap;gap:var(--space-sm)" role="group" aria-label="Goal selection">
-          <div class="goal-chip" data-goal="CODING" role="checkbox" aria-checked="false" tabindex="0">💻 Coding</div>
-          <div class="goal-chip" data-goal="STUDY" role="checkbox" aria-checked="false" tabindex="0">📚 Study</div>
-          <div class="goal-chip" data-goal="FITNESS" role="checkbox" aria-checked="false" tabindex="0">💪 Fitness</div>
-          <div class="goal-chip" data-goal="READING" role="checkbox" aria-checked="false" tabindex="0">📖 Reading</div>
-          <div class="goal-chip" data-goal="PRODUCTIVITY" role="checkbox" aria-checked="false" tabindex="0">⚡ Productivity</div>
-          <div class="goal-chip" data-goal="SOCIAL" role="checkbox" aria-checked="false" tabindex="0">🤝 Social</div>
-          <div class="goal-chip" data-goal="DISCIPLINE" role="checkbox" aria-checked="false" tabindex="0">🎯 Discipline</div>
-          <div class="goal-chip" data-goal="BALANCE" role="checkbox" aria-checked="false" tabindex="0">⚖️ Balance</div>
-        </div>
+            <!-- Character / Display Name -->
+            <div class="form-group">
+              <label class="form-label" for="pref-username">Character / Display Name</label>
+              <input type="text" id="pref-username" class="form-input" maxlength="20" minlength="2" required placeholder="Adventurer name (letters, numbers, underscore)">
+              <span class="form-help">2–20 characters. Must be unique across all adventurers.</span>
+            </div>
 
-        <button class="btn btn-primary btn-sm mt-lg" id="save-goals-btn">Save Goals</button>
-      </div>
+            <!-- Custom Title -->
+            <div class="form-group">
+              <label class="form-label" for="pref-title">Custom Title</label>
+              <input type="text" id="pref-title" class="form-input" placeholder='e.g. "The Relentless", "Code Wizard", "Ironbound"' maxlength="40">
+              <span class="form-help">Appears beneath your character name on cards and badges.</span>
+            </div>
 
-      <!-- Danger Zone -->
-      <div class="panel" style="border-color:rgba(239,68,68,0.2)" aria-label="Danger zone">
-        <div class="section-title" style="color:var(--diff-hard)">Danger Zone</div>
-        <p class="text-muted text-sm mb-md">These actions cannot be undone.</p>
-        <button class="btn btn-danger btn-sm" id="delete-account-btn" aria-label="Delete account permanently">
-          🗑 Delete Account
-        </button>
+            <button type="submit" class="btn btn-primary" id="save-customization-btn">
+              💾 Save Character Customization
+            </button>
+          </form>
+        </section>
+
+        <!-- 3. Life Goals (RPG Mission Influencers) -->
+        <section class="panel" aria-labelledby="goals-heading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="goals-heading">🎯 Active Life Goals</h2>
+            <span class="text-muted text-xs">Directly influences daily quest generation</span>
+          </div>
+
+          <div class="life-goals-banner">
+            <span class="life-goals-banner-icon">⚡</span>
+            <span>These goals guide the adaptive RPG quest generator. Select the real-world areas you want your daily quests to focus on.</span>
+          </div>
+
+          <div id="goals-grid" class="life-goals-grid" role="group" aria-label="Active Life Goals selection">
+            <div class="goal-card" data-goal="CODING" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">💻</span>
+              <span class="goal-card-name">Coding</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="STUDY" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">📚</span>
+              <span class="goal-card-name">Study</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="FITNESS" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">💪</span>
+              <span class="goal-card-name">Fitness</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="READING" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">📖</span>
+              <span class="goal-card-name">Reading</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="PRODUCTIVITY" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">⚡</span>
+              <span class="goal-card-name">Productivity</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="SOCIAL" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">🤝</span>
+              <span class="goal-card-name">Social</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="DISCIPLINE" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">🎯</span>
+              <span class="goal-card-name">Discipline</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+            <div class="goal-card" data-goal="BALANCE" role="checkbox" aria-checked="false" tabindex="0">
+              <span class="goal-card-icon">⚖️</span>
+              <span class="goal-card-name">Balance</span>
+              <span class="goal-card-indicator">Select</span>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="save-goals-btn">
+            ✓ Save Life Goals
+          </button>
+        </section>
+
+        <!-- 4. Gameplay & Interface Preferences -->
+        <section class="panel" aria-labelledby="preferences-heading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="preferences-heading">🎮 Gameplay & Experience</h2>
+            <span class="text-muted text-xs">Configure your interface and tracking preferences</span>
+          </div>
+
+          <form id="preferences-form">
+            <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid var(--border-subtle)">
+              <div>
+                <label class="form-label" for="pref-reduced-motion" style="margin-bottom:2px">Reduced Visual Effects & Motion</label>
+                <div class="text-muted text-xs">Disables particle backgrounds and intensive animations.</div>
+              </div>
+              <input type="checkbox" id="pref-reduced-motion" style="width:20px;height:20px;accent-color:var(--accent-cyan);cursor:pointer">
+            </div>
+
+            <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid var(--border-subtle)">
+              <div>
+                <label class="form-label" for="pref-activity-tracking" style="margin-bottom:2px">Activity Logging & Tracking</label>
+                <div class="text-muted text-xs">Enable logging activities to generate adaptive daily quests.</div>
+              </div>
+              <input type="checkbox" id="pref-activity-tracking" checked style="width:20px;height:20px;accent-color:var(--accent-cyan);cursor:pointer">
+            </div>
+
+            <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);padding:var(--space-sm) 0">
+              <div>
+                <label class="form-label" for="pref-notifications" style="margin-bottom:2px">In-App Alerts & Quest Reminders</label>
+                <div class="text-muted text-xs">Receive visual toasts when completing quests and unlocking achievements.</div>
+              </div>
+              <input type="checkbox" id="pref-notifications" checked style="width:20px;height:20px;accent-color:var(--accent-cyan);cursor:pointer">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm mt-md" id="save-preferences-btn">
+              Save Preferences
+            </button>
+          </form>
+        </section>
+
+        <!-- 5. Security & Danger Zone -->
+        <section class="panel" style="border-color:rgba(239,68,68,0.25)" aria-labelledby="danger-heading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="danger-heading" style="color:var(--diff-hard)">⚠ Security & Danger Zone</h2>
+            <span class="text-muted text-xs">Permanent character and account actions</span>
+          </div>
+
+          <p class="text-muted text-sm mb-md">Deleting your account permanently removes your character level, attributes, gold, inventory, and all logged progress from the database.</p>
+
+          <button type="button" class="btn btn-danger btn-sm" id="delete-account-btn" aria-label="Delete account permanently">
+            🗑 Delete Character & Account
+          </button>
+        </section>
+
       </div>
     </div>
   </main>
 
-  <div id="toast-container" aria-live="polite"></div>
-  <div class="offline-banner" role="alert">📡 You are offline.</div>
-
   <script src="../js/api/api.js"></script>
   <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
   <script>
     Utils.initParticles();
     Utils.initNav('settings');
 
-    const AVATAR_EMOJIS = { scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️', mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙' };
-    const CLASS_LABELS = { SCHOLAR: '📚 Scholar', WARRIOR: '⚔️ Warrior', GUARDIAN: '🛡️ Guardian', ROGUE: '🗡️ Rogue' };
+    const AVATARS = [
+      { id: 'scholar',  emoji: '🧙', label: 'Scholar' },
+      { id: 'warrior',  emoji: '⚔️', label: 'Warrior' },
+      { id: 'rogue',    emoji: '🗡️', label: 'Rogue' },
+      { id: 'guardian', emoji: '🛡️', label: 'Guardian' },
+      { id: 'mage',     emoji: '🔮', label: 'Mage' },
+      { id: 'ranger',   emoji: '🏹', label: 'Ranger' },
+      { id: 'paladin',  emoji: '✨', label: 'Paladin' },
+      { id: 'assassin', emoji: '🌙', label: 'Assassin' },
+    ];
 
-    let selectedGoals = new Set();
-    let settingsData = null;
+    const CLASS_LABELS = {
+      SCHOLAR: '📚 Scholar', WARRIOR: '⚔️ Warrior',
+      GUARDIAN: '🛡️ Guardian', ROGUE: '🗡️ Rogue',
+    };
 
-    (async () => {
-      const user = await Utils.checkProfileOrRedirect();
-      if (!user) return;
+    let selectedAvatar = 'warrior';
+    let selectedGoals = new Set(['CODING', 'STUDY']);
+    let profileData = null;
 
-      settingsData = user;
-      renderSettings(user);
+    // Load initial settings
+    const loadSettings = async () => {
+      try {
+        const user = await Utils.checkProfileOrRedirect();
+        if (!user) return;
 
-      if (user.profile) {
-        document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
-      }
-    })();
+        const profile = await API.profile.get();
+        profileData = profile;
 
-    const renderSettings = (user) => {
-      const profile = user.profile || {};
-      const settings = user.settings || {};
+        renderAccountInfo(profile);
+        renderAvatarPicker(profile.avatar || 'warrior');
+        renderCustomizationInputs(profile);
+        renderGoals(profile.settings?.goals);
+        renderPreferences(profile.settings);
 
-      document.getElementById('settings-avatar').textContent = AVATAR_EMOJIS[profile.avatar] || '🧙';
-      document.getElementById('settings-username').textContent = profile.username || user.email;
-      document.getElementById('settings-email').textContent = user.email;
-      document.getElementById('settings-class').textContent = CLASS_LABELS[profile.class] || '';
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('settings-content').style.display = 'flex';
+        document.getElementById('settings-content').classList.add('page-enter');
 
-      document.getElementById('pref-username').value = profile.username || '';
-      document.getElementById('pref-title').value = profile.title || '';
+        // Sync navbar
+        Utils.updateNavCharacter(profile);
 
-      // Goals
-      if (settings.goals) {
-        selectedGoals = new Set(settings.goals.split(','));
-        document.querySelectorAll('.goal-chip').forEach(chip => {
-          const isSelected = selectedGoals.has(chip.dataset.goal);
-          chip.classList.toggle('selected', isSelected);
-          chip.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-        });
-      } else {
-        document.querySelectorAll('.goal-chip').forEach(chip => {
-          chip.classList.remove('selected');
-          chip.setAttribute('aria-checked', 'false');
-        });
+      } catch (err) {
+        console.error('Settings load error:', err);
+        document.getElementById('loading-state').innerHTML = `
+          <div class="error-state">
+            <span style="font-size:2rem">⚠</span>
+            <h3 style="font-family:var(--font-display)">Could Not Load Settings</h3>
+            <p class="text-muted">${err.message || 'Please check your connection and try again.'}</p>
+            <button class="btn btn-primary" onclick="location.reload()">↻ Retry</button>
+          </div>
+        `;
       }
     };
 
-    // Goal chips
-    document.querySelectorAll('.goal-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const goal = chip.dataset.goal;
+    // ─── Render Account Overview ────────────────────────────────────
+    const renderAccountInfo = (p) => {
+      const avatarObj = AVATARS.find(a => a.id === p.avatar) || AVATARS[1];
+      document.getElementById('settings-avatar-preview').textContent = avatarObj.emoji;
+      document.getElementById('settings-username').textContent = p.username || 'Adventurer';
+      document.getElementById('settings-email').textContent = p.account?.email || '';
+      document.getElementById('settings-class-badge').textContent = CLASS_LABELS[p.class] || p.class || 'WARRIOR';
+
+      if (p.account?.authMethod) {
+        document.getElementById('settings-auth-badge').textContent = p.account.authMethod === 'Google' ? '🌐 Google OAuth' : '🔒 Email Auth';
+      }
+
+      if (p.account?.createdAt) {
+        const date = new Date(p.account.createdAt);
+        document.getElementById('settings-member-since').textContent = `Joined ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      }
+    };
+
+    // ─── Render Avatar Picker ───────────────────────────────────────
+    const renderAvatarPicker = (currentAvatar) => {
+      selectedAvatar = currentAvatar;
+      const grid = document.getElementById('avatar-picker-grid');
+      grid.innerHTML = AVATARS.map(a => `
+        <button type="button" class="avatar-option-btn ${a.id === selectedAvatar ? 'selected' : ''}"
+                data-avatar="${a.id}"
+                role="radio"
+                aria-checked="${a.id === selectedAvatar ? 'true' : 'false'}"
+                aria-label="Select avatar: ${a.label}">
+          <span class="avatar-option-emoji">${a.emoji}</span>
+          <span class="avatar-option-label">${a.label}</span>
+        </button>
+      `).join('');
+
+      grid.querySelectorAll('.avatar-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedAvatar = btn.dataset.avatar;
+          grid.querySelectorAll('.avatar-option-btn').forEach(b => {
+            b.classList.remove('selected');
+            b.setAttribute('aria-checked', 'false');
+          });
+          btn.classList.add('selected');
+          btn.setAttribute('aria-checked', 'true');
+
+          const chosen = AVATARS.find(a => a.id === selectedAvatar);
+          if (chosen) {
+            document.getElementById('settings-avatar-preview').textContent = chosen.emoji;
+          }
+        });
+      });
+    };
+
+    // ─── Customization Inputs ───────────────────────────────────────
+    const renderCustomizationInputs = (p) => {
+      document.getElementById('pref-username').value = p.username || '';
+      document.getElementById('pref-title').value = p.title || '';
+    };
+
+    // ─── Render Goals ───────────────────────────────────────────────
+    const renderGoals = (goals) => {
+      if (Array.isArray(goals)) {
+        selectedGoals = new Set(goals);
+      } else if (typeof goals === 'string') {
+        selectedGoals = new Set(goals.split(',').map(g => g.trim()).filter(Boolean));
+      }
+
+      document.querySelectorAll('.goal-card').forEach(card => {
+        const isSelected = selectedGoals.has(card.dataset.goal);
+        card.classList.toggle('selected', isSelected);
+        card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        const indicator = card.querySelector('.goal-card-indicator');
+        if (indicator) indicator.textContent = isSelected ? '✓ Active' : 'Select';
+      });
+    };
+
+    // Attach Goal Card Clicks
+    document.querySelectorAll('.goal-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const goal = card.dataset.goal;
         if (selectedGoals.has(goal)) {
           if (selectedGoals.size > 1) {
             selectedGoals.delete(goal);
-            chip.classList.remove('selected');
-            chip.setAttribute('aria-checked', 'false');
+            card.classList.remove('selected');
+            card.setAttribute('aria-checked', 'false');
+            card.querySelector('.goal-card-indicator').textContent = 'Select';
+          } else {
+            Utils.showToast('You must have at least one active life goal.', 'warning');
           }
         } else {
           selectedGoals.add(goal);
-          chip.classList.add('selected');
-          chip.setAttribute('aria-checked', 'true');
+          card.classList.add('selected');
+          card.setAttribute('aria-checked', 'true');
+          card.querySelector('.goal-card-indicator').textContent = '✓ Active';
         }
       });
-      chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); } });
+
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.click();
+        }
+      });
     });
 
-    // Profile form
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    // ─── Render Preferences ─────────────────────────────────────────
+    const renderPreferences = (s = {}) => {
+      const reducedMotion = localStorage.getItem('lifequest_reduced_motion') === 'true';
+      document.getElementById('pref-reduced-motion').checked = reducedMotion;
+      document.getElementById('pref-activity-tracking').checked = s.activityTrackingEnabled !== false;
+      document.getElementById('pref-notifications').checked = s.notificationsEnabled !== false;
+    };
+
+    // ─── Save Character Customization ───────────────────────────────
+    document.getElementById('customization-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      document.getElementById('profile-error').style.display = 'none';
-      document.getElementById('profile-success').style.display = 'none';
+      const errEl = document.getElementById('customization-error');
+      const succEl = document.getElementById('customization-success');
+      errEl.style.display = 'none';
+      succEl.style.display = 'none';
 
       const username = document.getElementById('pref-username').value.trim();
       const title = document.getElementById('pref-title').value.trim();
 
-      if (username && username.length < 2) {
-        const err = document.getElementById('profile-error');
-        err.style.display = 'flex';
-        err.textContent = '⚠ Username must be at least 2 characters.';
+      if (!username || username.length < 2) {
+        errEl.style.display = 'flex';
+        errEl.textContent = '⚠ Username must be at least 2 characters.';
         return;
       }
 
-      const btn = document.getElementById('save-profile-btn');
-      btn._orig = btn.textContent;
-      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0 auto"></div>';
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        errEl.style.display = 'flex';
+        errEl.textContent = '⚠ Username can only contain letters, numbers, and underscores.';
+        return;
+      }
+
+      const btn = document.getElementById('save-customization-btn');
       btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0 auto"></div>';
 
       try {
-        const updates = {};
-        if (username) updates.username = username;
-        if (title) updates.title = title;
+        const res = await API.profile.update({
+          username,
+          title,
+          avatar: selectedAvatar,
+        });
 
-        await API.profile.update(updates);
+        succEl.style.display = 'block';
+        succEl.textContent = '✓ Character customized successfully!';
+        document.getElementById('settings-username').textContent = username;
 
-        document.getElementById('profile-success').style.display = 'block';
-        document.getElementById('profile-success').textContent = '✓ Profile updated successfully!';
-        if (username) document.getElementById('settings-username').textContent = username;
-        Utils.showToast('Profile updated!', 'success');
+        Utils.showToast('Character updated across Life Quest!', 'success');
+
+        // Immediately update navbar HUD and identity everywhere
+        Utils.updateNavCharacter(res);
+        if (typeof HeaderAuth !== 'undefined' && HeaderAuth.syncUser) {
+          HeaderAuth.syncUser(res);
+        }
+
       } catch (err) {
-        const errEl = document.getElementById('profile-error');
         errEl.style.display = 'flex';
-        errEl.textContent = `⚠ ${err.message || 'Failed to update profile.'}`;
+        errEl.textContent = `⚠ ${err.message || 'Failed to update character.'}`;
       } finally {
-        btn.textContent = btn._orig;
         btn.disabled = false;
+        btn.textContent = '💾 Save Character Customization';
       }
     });
 
-    // Save goals
+    // ─── Save Life Goals ────────────────────────────────────────────
     document.getElementById('save-goals-btn').addEventListener('click', async () => {
       const btn = document.getElementById('save-goals-btn');
-      btn._orig = btn.textContent;
-      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
       btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
 
       try {
         await API.profile.update({ goals: Array.from(selectedGoals) });
-        Utils.showToast('Goals saved! New quests will reflect your goals.', 'success');
+        Utils.showToast('Life goals saved! Adaptive quests will reflect your choices.', 'success');
       } catch (err) {
         Utils.showToast(err.message || 'Failed to save goals', 'error');
       } finally {
-        btn.textContent = btn._orig;
         btn.disabled = false;
+        btn.textContent = '✓ Save Life Goals';
       }
     });
 
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', async () => {
+    // ─── Save Preferences ───────────────────────────────────────────
+    document.getElementById('preferences-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const reducedMotion = document.getElementById('pref-reduced-motion').checked;
+      const activityTrackingEnabled = document.getElementById('pref-activity-tracking').checked;
+      const notificationsEnabled = document.getElementById('pref-notifications').checked;
+
+      localStorage.setItem('lifequest_reduced_motion', reducedMotion);
+      const canvas = document.getElementById('particles-canvas');
+      if (canvas) canvas.style.display = reducedMotion ? 'none' : 'block';
+
+      const btn = document.getElementById('save-preferences-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
+
+      try {
+        await API.profile.update({
+          activityTrackingEnabled,
+          notificationsEnabled,
+        });
+        Utils.showToast('Preferences saved!', 'success');
+      } catch (err) {
+        Utils.showToast(err.message || 'Failed to save preferences', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Preferences';
+      }
+    });
+
+    // ─── Logout ─────────────────────────────────────────────────────
+    document.getElementById('account-logout-btn').addEventListener('click', async () => {
       try {
         await API.auth.logout();
-        window.location.href = '/';
-      } catch {
-        window.location.href = '/';
-      }
+      } catch {}
+      window.location.href = '/';
     });
 
-    // Delete account
+    // ─── Delete Account ─────────────────────────────────────────────
     document.getElementById('delete-account-btn').addEventListener('click', async () => {
-      const confirmed = confirm('⚠ Are you SURE you want to delete your account? This cannot be undone. All your progress will be lost.');
+      const confirmed = confirm('⚠ Are you SURE you want to delete your character and account? This cannot be undone. All your progress will be lost forever.');
       if (!confirmed) return;
-      const doubleConfirm = confirm('This will permanently delete your character, quests, and progress. Continue?');
+      const doubleConfirm = confirm('This will permanently delete your character, attributes, quests, and gold. Are you absolutely certain?');
       if (!doubleConfirm) return;
 
-      // Could implement DELETE /api/auth/account here
-      Utils.showToast('Account deletion: please contact support.', 'warning', 6000);
+      Utils.showToast('To delete your account, please send a request to support or the administrator.', 'warning', 6000);
     });
+
+    // Start initialization
+    loadSettings();
   </script>
 </body>
 </html>

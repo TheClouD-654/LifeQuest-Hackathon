@@ -134,6 +134,7 @@ router.get('/me', requireAuth, async (req, res) => {
     res.json({
       id: user.id,
       email: user.email,
+      createdAt: user.createdAt,
       hasGoogleAuth: !!user.googleId,
       profile: user.profile,
       character: user.profile ? {

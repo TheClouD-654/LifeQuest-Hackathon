@@ -16,6 +16,7 @@
     <div class="container nav-inner">
       <a href="/" class="nav-logo">⚔ LIFE QUEST</a>
       <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="/pages/profile.html" class="nav-link" data-page="profile" aria-label="Profile">👤 Profile</a></li>
         <li><a href="/pages/dashboard.html" class="nav-link" data-page="dashboard">📊 Status</a></li>
         <li><a href="/pages/quests.html" class="nav-link" data-page="quests">⚔ Quests</a></li>
         <li><a href="/pages/activity.html" class="nav-link" data-page="activity">📈 Activity</a></li>
@@ -25,7 +26,7 @@
         <li><a href="/pages/settings.html" class="nav-link" data-page="settings">⚙ Settings</a></li>
       </ul>
       <div style="display:flex;align-items:center;gap:var(--space-md)">
-        <span class="nav-level" id="nav-level">LV 1</span>
+        <div id="nav-user-slot" class="nav-auth-slot"></div>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -117,6 +118,7 @@
 
   <script src="../js/api/api.js"></script>
   <script src="../js/utils/helpers.js"></script>
+  <script src="../js/components/headerAuth.js"></script>
   <script>
     Utils.initParticles();
     Utils.initNav('activity');
@@ -124,7 +126,7 @@
     (async () => {
       const user = await Utils.checkProfileOrRedirect();
       if (!user) return;
-      if (user.profile) document.getElementById('nav-level').textContent = `LV ${user.profile.level}`;
+      if (user.profile) Utils.updateNavCharacter(user.profile);
       loadData();
     })();
 

@@ -326,7 +326,7 @@ async function run() {
     recordTest(29, 'Invalid requests return proper errors', errorHandlingWorks, 'Validation errors returned 400 Bad Request');
 
     // 30. Application does not produce blank screens/crashes
-    const allPages = ['/', '/pages/dashboard.html', '/pages/quests.html', '/pages/activity.html', '/pages/shop.html', '/pages/inventory.html', '/pages/stats.html', '/pages/settings.html', '/pages/auth.html', '/pages/character.html'];
+    const allPages = ['/', '/pages/dashboard.html', '/pages/quests.html', '/pages/activity.html', '/pages/shop.html', '/pages/inventory.html', '/pages/stats.html', '/pages/profile.html', '/pages/settings.html', '/pages/auth.html', '/pages/character.html'];
     let allPages200 = true;
     for (const page of allPages) {
       const pRes = await jarUserA.fetch(page);

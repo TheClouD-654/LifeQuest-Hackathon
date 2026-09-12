@@ -292,6 +292,21 @@ const initParticles = (canvasId = 'particles-canvas') => {
 };
 
 /**
+ * Update navbar character displays and sync RPG HUD
+ */
+const updateNavCharacter = (profile) => {
+  if (!profile) return;
+  const navLevel = document.getElementById('nav-level');
+  if (navLevel) navLevel.textContent = `LV ${profile.level}`;
+  const navGold = document.querySelector('#nav-gold [data-gold]');
+  if (navGold) navGold.textContent = formatNumber(profile.gold);
+
+  if (typeof HeaderAuth !== 'undefined' && HeaderAuth.syncUser) {
+    HeaderAuth.syncUser({ profile });
+  }
+};
+
+/**
  * Initialize navigation
  */
 const initNav = (activePage = '') => {
@@ -313,6 +328,12 @@ const initNav = (activePage = '') => {
       }
     });
   }
+
+  // Mount unified RPG HUD if nav-user-slot exists
+  const userSlot = document.getElementById('nav-user-slot');
+  if (userSlot && typeof HeaderAuth !== 'undefined') {
+    HeaderAuth.init({ containerId: 'nav-user-slot', isAppNav: true });
+  }
 };
 
 // Expose globally
@@ -322,5 +343,5 @@ window.Utils = {
   getDifficultyClass, ATTR_ICONS,
   requireAuthRedirect, checkProfileOrRedirect,
   buildXPBar, buildAttributeBars, buildQuestCard,
-  initParticles, initNav,
+  initParticles, initNav, updateNavCharacter,
 };
