@@ -225,7 +225,7 @@
               <input type="password" id="login-password" class="form-input" placeholder="Your password"
                      autocomplete="current-password" required aria-required="true">
               <button type="button" class="password-toggle" aria-label="Toggle password visibility"
-                      onclick="togglePassword('login-password', this)">👁</button>
+                      data-target="login-password" id="toggle-login-password">👁</button>
             </div>
           </div>
 
@@ -235,7 +235,7 @@
         </form>
 
         <div class="auth-switch">
-          No account? <a href="#" onclick="showPanel('signup')">Create one here</a>
+          No account? <a href="#signup" id="link-switch-signup" data-switch="signup" role="button">Create one here</a>
         </div>
       </div>
 
@@ -275,7 +275,7 @@
               <input type="password" id="signup-password" class="form-input" placeholder="Min. 6 characters"
                      autocomplete="new-password" required aria-required="true" minlength="6">
               <button type="button" class="password-toggle" aria-label="Toggle password visibility"
-                      onclick="togglePassword('signup-password', this)">👁</button>
+                      data-target="signup-password" id="toggle-signup-password">👁</button>
             </div>
           </div>
 
@@ -294,7 +294,7 @@
         </form>
 
         <div class="auth-switch">
-          Already have an account? <a href="#" onclick="showPanel('login')">Sign in</a>
+          Already have an account? <a href="#login" id="link-switch-login" data-switch="login" role="button">Sign in</a>
         </div>
       </div>
 
@@ -339,10 +339,35 @@
     // Helper: validate email address format
     const isValidEmail = (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
 
-    // Check URL params for initial panel
+    // Check URL params or hash for initial panel
     const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode') || 'login';
+    const hashMode = window.location.hash.replace('#', '');
+    const mode = params.get('mode') || (hashMode === 'signup' ? 'signup' : 'login');
     showPanel(mode);
+
+    // Event listeners for switching panels
+    const switchLoginBtn = document.getElementById('link-switch-login');
+    if (switchLoginBtn) {
+      switchLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPanel('login');
+        try { history.replaceState(null, '', window.location.pathname + '?mode=login'); } catch (err) {}
+      });
+    }
+
+    const switchSignupBtn = document.getElementById('link-switch-signup');
+    if (switchSignupBtn) {
+      switchSignupBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPanel('signup');
+        try { history.replaceState(null, '', window.location.pathname + '?mode=signup'); } catch (err) {}
+      });
+    }
+
+    window.addEventListener('hashchange', () => {
+      const h = window.location.hash.replace('#', '');
+      if (h === 'login' || h === 'signup') showPanel(h);
+    });
 
     // Check error from OAuth redirect
     const oauthError = params.get('error');
@@ -357,6 +382,7 @@
     // ─── Password toggle ──────────────────────────────────────────
     const togglePassword = (inputId, btn) => {
       const input = document.getElementById(inputId);
+      if (!input) return;
       if (input.type === 'password') {
         input.type = 'text';
         btn.textContent = '🙈';
@@ -369,6 +395,15 @@
     };
     window.togglePassword = togglePassword;
     window.showPanel = showPanel;
+
+    // Attach password toggle listeners
+    document.querySelectorAll('.password-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = btn.dataset.target || (btn.previousElementSibling ? btn.previousElementSibling.id : null);
+        if (targetId) togglePassword(targetId, btn);
+      });
+    });
 
     // ─── Loading state ────────────────────────────────────────────
     const setLoading = (btnId, loading) => {
