@@ -351,6 +351,19 @@ a:hover { color: var(--text-primary); }
   background: linear-gradient(90deg, var(--border-panel), transparent);
 }
 
+.section-title.center {
+  justify-content: center;
+  text-align: center;
+}
+
+.section-title.center::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(270deg, var(--border-panel), transparent);
+}
+
+
 /* ─── Buttons ────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;

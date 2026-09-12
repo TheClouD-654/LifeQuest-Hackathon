@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Life RPG — Create Your Character</title>
+  <title>Life Quest — Create Your Character</title>
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="../css/globals.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -138,6 +138,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      text-align: center;
       gap: var(--space-md);
       padding: var(--space-lg);
       background: var(--bg-elevated);
@@ -155,7 +156,7 @@
   <div class="bg-mesh"></div>
 
   <div class="creation-header">
-    <a href="/" style="font-family:var(--font-display);color:var(--accent-cyan);letter-spacing:0.1em;text-decoration:none">⚔ LIFE RPG</a>
+    <a href="/" style="font-family:var(--font-display);color:var(--accent-cyan);letter-spacing:0.1em;text-decoration:none">⚔ LIFE QUEST</a>
     <h1 style="margin-top:var(--space-lg);letter-spacing:0.1em">Your Journey Begins</h1>
     <p style="color:var(--text-muted);margin-top:var(--space-sm)">Create your character and choose your path</p>
   </div>
@@ -245,15 +246,15 @@
 
         <!-- Preview -->
         <div class="creation-section">
-          <div class="section-title">Preview</div>
-          <div class="character-preview">
-            <div class="character-avatar" id="preview-avatar" style="width:80px;height:80px;font-size:2.5rem">🧙</div>
-            <div>
-              <div class="character-username" id="preview-name" style="font-size:1.1rem">Hero</div>
-              <div class="character-title" id="preview-title">"Novice"</div>
-              <div class="character-class-badge" id="preview-class" style="margin:6px auto;display:inline-flex">📚 Scholar</div>
+          <div class="section-title center">Preview</div>
+          <div class="character-preview" style="text-align:center;align-items:center;justify-content:center">
+            <div class="character-avatar" id="preview-avatar" style="width:80px;height:80px;font-size:2.5rem;margin:0 auto">🧙</div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%">
+              <div class="character-username" id="preview-name" style="font-size:1.1rem;text-align:center;width:100%;display:block">Hero</div>
+              <div class="character-title" id="preview-title" style="text-align:center;width:100%;margin-top:2px;display:block">"Novice"</div>
+              <div class="character-class-badge" id="preview-class" style="margin:8px auto 0;display:inline-flex;justify-content:center">📚 Scholar</div>
             </div>
-            <div style="display:flex;gap:var(--space-md);font-size:0.8rem;color:var(--text-muted)">
+            <div style="display:flex;gap:var(--space-md);font-size:0.8rem;color:var(--text-muted);justify-content:center;width:100%">
               <span>LV 1</span>
               <span>0 XP</span>
               <span>🪙 100 Gold</span>

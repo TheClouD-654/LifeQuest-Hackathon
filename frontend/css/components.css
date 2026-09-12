@@ -197,6 +197,7 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.08em;
+  text-align: center;
 }
 
 .character-title {
@@ -207,6 +208,7 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-style: italic;
+  text-align: center;
 }
 
 .character-class-badge {
