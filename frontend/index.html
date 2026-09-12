@@ -16,23 +16,25 @@
     /* Landing-specific styles */
     .hero {
       position: relative;
-      min-height: 100vh;
+      min-height: calc(100vh - 65px);
+      max-height: 820px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: var(--space-3xl) var(--space-lg);
-      overflow: hidden;
+      padding: clamp(var(--space-xl), 4vh, var(--space-3xl)) var(--space-lg);
+      box-sizing: border-box;
+      overflow: visible;
     }
 
     .hero-eyebrow {
-      font-size: 0.75rem;
+      font-size: clamp(0.7rem, 1vw, 0.8rem);
       font-weight: 700;
-      letter-spacing: 0.3em;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
       color: var(--accent-cyan);
-      margin-bottom: var(--space-lg);
+      margin-bottom: var(--space-md);
       display: flex;
       align-items: center;
       gap: var(--space-sm);
@@ -49,11 +51,11 @@
 
     .hero-heading {
       font-family: var(--font-display);
-      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-size: clamp(2.2rem, 5.5vw, 4.4rem);
       font-weight: 900;
-      line-height: 1.05;
+      line-height: 1.1;
       letter-spacing: 0.02em;
-      margin-bottom: var(--space-lg);
+      margin-bottom: var(--space-md);
       background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-purple) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -62,11 +64,11 @@
     }
 
     .hero-sub {
-      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-size: clamp(0.95rem, 1.4vw, 1.15rem);
       color: var(--text-secondary);
       max-width: 520px;
-      line-height: 1.7;
-      margin-bottom: var(--space-2xl);
+      line-height: 1.6;
+      margin-bottom: var(--space-xl);
     }
 
     .hero-ctas {
@@ -74,33 +76,41 @@
       gap: var(--space-md);
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: var(--space-3xl);
+      margin-bottom: var(--space-xl);
     }
 
     .hero-stats {
-      display: flex;
-      gap: var(--space-xl);
+      display: inline-flex;
+      gap: clamp(var(--space-lg), 3.5vw, var(--space-2xl));
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: var(--space-lg);
+      align-items: center;
+      margin-top: 0;
+      padding: var(--space-md) var(--space-2xl);
+      background: rgba(14, 26, 50, 0.55);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .hero-stat {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
     }
 
     .hero-stat-value {
       font-family: var(--font-display);
-      font-size: 1.8rem;
+      font-size: clamp(1.4rem, 2vw, 1.8rem);
       font-weight: 700;
       color: var(--accent-cyan);
     }
 
     .hero-stat-label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -108,7 +118,7 @@
 
     /* Dashboard Preview */
     .preview-section {
-      padding: var(--space-3xl) 0;
+      padding: var(--space-2xl) 0 var(--space-3xl);
       overflow: hidden;
     }
 
@@ -116,10 +126,11 @@
       background: var(--bg-panel);
       border: 1px solid var(--border-panel);
       border-radius: var(--radius-xl);
-      padding: var(--space-xl);
-      max-width: 900px;
+      padding: clamp(var(--space-md), 2.5vw, var(--space-xl));
+      max-width: 980px;
+      width: 100%;
       margin: 0 auto;
-      box-shadow: var(--shadow-panel), 0 0 80px rgba(0, 212, 255, 0.05);
+      box-shadow: var(--shadow-panel), 0 0 80px rgba(0, 212, 255, 0.06);
       position: relative;
       overflow: hidden;
     }
@@ -301,10 +312,19 @@
       font-size: 0.8rem;
     }
 
+    @media (max-width: 992px) {
+      .hero { max-height: none; min-height: auto; padding: var(--space-3xl) var(--space-lg); }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid::before { display: none; }
+    }
+
     @media (max-width: 768px) {
+      .hero-stats { border-radius: var(--radius-lg); padding: var(--space-md) var(--space-lg); gap: var(--space-md); }
       .features-grid, .steps-grid { grid-template-columns: 1fr; }
       .steps-grid::before { display: none; }
       .preview-grid { grid-template-columns: 1fr; }
+      .preview-header { flex-direction: column; align-items: flex-start; gap: var(--space-md); }
     }
   </style>
 </head>
@@ -374,8 +394,8 @@
   <!-- Dashboard Preview -->
   <section class="preview-section" aria-label="App preview">
     <div class="container">
-      <div class="section-title" style="justify-content:center;max-width:400px;margin:0 auto var(--space-xl)">
-        Your RPG Command Center
+      <div class="section-title center" style="max-width:400px;margin:0 auto var(--space-xl)">
+        Your Command Center
       </div>
       <div class="preview-card scan-line">
         <div class="preview-header">
