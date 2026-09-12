@@ -48,7 +48,7 @@
       <div id="stats-content" style="display:none">
 
         <!-- Stats Summary -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)" id="stat-cards"></div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:var(--space-md);margin-bottom:var(--space-xl)" id="stat-cards"></div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg)">
 
@@ -144,7 +144,7 @@
       ];
 
       document.getElementById('stat-cards').innerHTML = cards.map(card => `
-        <div class="panel panel-sm" style="text-align:center;border-color:${card.accent}20">
+        <div class="panel panel-sm" style="text-align:center;border-color:${card.accent}20;flex:1 1 160px;max-width:230px">
           <div style="font-size:1.8rem;margin-bottom:var(--space-sm)">${card.icon}</div>
           <div style="font-size:1.4rem;font-weight:800;color:${card.accent};font-family:var(--font-display)">${card.value}</div>
           <div class="text-muted text-xs uppercase" style="margin-top:4px">${card.label}</div>
