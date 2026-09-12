@@ -665,17 +665,46 @@
       heroCtaId: 'hero-cta-start',
     });
 
-    // ─── Command Center card: real character when logged in ───────
-    // Anonymous visitors keep the static preview mock; logged-in users
-    // get their own live stats from the API.
+    // ─── Session-aware page: real character when logged in ───────
+    // Anonymous visitors keep the static marketing content; logged-in
+    // users get the signup banner swapped for a continue CTA and the
+    // Command Center card hydrated with their own live stats.
     (async () => {
       let user;
       try {
         user = await API.auth.me();
       } catch {
-        return; // not logged in — keep the marketing mock
+        return; // not logged in — keep the marketing content
       }
-      if (!user || user.needsProfile) return;
+      if (!user || !user.id) return;
+
+      // Swap the bottom signup banner for a continue/create CTA
+      const swapCta = (heading, copy, href, label) => {
+        const h = document.getElementById('cta-heading');
+        if (!h) return;
+        const p = h.nextElementSibling;
+        const btns = document.getElementById('cta-signup')?.parentElement;
+        h.textContent = heading;
+        if (p && p.tagName === 'P') p.textContent = copy;
+        if (btns) btns.innerHTML = `<a href="${href}" class="btn btn-primary btn-lg">${label}</a>`;
+      };
+
+      if (user.needsProfile) {
+        swapCta(
+          'Forge Your Legend',
+          'Your account is ready — create the character that will carry your real-life progress.',
+          '/pages/character.html',
+          '⚔ Create Your Character'
+        );
+        return; // no character yet — keep the preview mock
+      }
+
+      swapCta(
+        'Welcome Back, Adventurer',
+        'Your character has been waiting. Log an activity, clear your quests, and keep the streak alive.',
+        '/pages/dashboard.html',
+        '⚔ Go To Dashboard'
+      );
 
       let profile, attrs, activeQuests = null;
       try {
