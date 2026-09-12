@@ -333,6 +333,41 @@
       .steps-grid::before { display: none; }
       .preview-grid { grid-template-columns: 1fr; }
       .preview-header { flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+
+      /* Feature cards: same design, richer presence on small screens */
+      .features-grid { gap: var(--space-md); }
+      .feature-card {
+        position: relative;
+        overflow: hidden;
+        padding: var(--space-lg);
+        background: linear-gradient(165deg, rgba(15, 34, 66, 0.85), rgba(7, 15, 30, 0.92));
+        border: 1px solid rgba(0, 212, 255, 0.14);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 14%; right: 14%;
+        height: 2px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.65), transparent);
+      }
+      .feature-card:active { transform: translateY(-2px); border-color: rgba(0, 212, 255, 0.35); }
+      .feature-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        font-size: 1.9rem;
+        margin: 0 auto var(--space-md);
+        background: radial-gradient(circle at 50% 32%, rgba(0, 212, 255, 0.18), rgba(0, 212, 255, 0.04) 72%);
+        border: 1px solid rgba(0, 212, 255, 0.22);
+        border-radius: 18px;
+        box-shadow: inset 0 0 18px rgba(0, 212, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.3);
+      }
+      .feature-title { font-size: 0.95rem; letter-spacing: 0.1em; }
+      .feature-desc { color: var(--text-secondary); }
     }
   </style>
 </head>
