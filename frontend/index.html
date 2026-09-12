@@ -418,23 +418,23 @@
       <div class="preview-card scan-line">
         <div class="preview-header">
           <div style="display:flex;align-items:center;gap:var(--space-md)">
-            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);border:2px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🧙</div>
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);border:2px solid var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:1.5rem" id="cc-avatar">🧙</div>
             <div>
-              <div style="font-family:var(--font-display);font-size:1rem;color:var(--text-primary)">CloudWalker</div>
-              <div style="font-size:0.75rem;color:var(--accent-gold);font-style:italic">"The Relentless"</div>
+              <div style="font-family:var(--font-display);font-size:1rem;color:var(--text-primary)" id="cc-name">CloudWalker</div>
+              <div style="font-size:0.75rem;color:var(--accent-gold);font-style:italic" id="cc-title">"The Relentless"</div>
             </div>
           </div>
           <div style="display:flex;gap:var(--space-lg);align-items:center">
-            <div class="streak-display"><span class="streak-fire">🔥</span> 7 Day Streak</div>
-            <div class="gold-display"><div class="gold-coin"></div> 1,240</div>
-            <div class="level-number" style="font-size:1.5rem">LV8</div>
+            <div class="streak-display" id="cc-streak"><span class="streak-fire">🔥</span> 7 Day Streak</div>
+            <div class="gold-display" id="cc-gold"><div class="gold-coin"></div> 1,240</div>
+            <div class="level-number" style="font-size:1.5rem" id="cc-level">LV8</div>
           </div>
         </div>
         <div class="preview-grid">
           <!-- Attributes -->
           <div>
             <div class="section-title" style="font-size:0.65rem">Attributes</div>
-            <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="cc-attrs">
               <div class="attr-bar-row"><span class="attr-name">🧠 INT</span><div class="attr-track"><div class="attr-fill intellect" style="width:45%"></div></div><span class="attr-value">91</span></div>
               <div class="attr-bar-row"><span class="attr-name">💪 STR</span><div class="attr-track"><div class="attr-fill strength" style="width:36%"></div></div><span class="attr-value">72</span></div>
               <div class="attr-bar-row"><span class="attr-name">🎯 DIS</span><div class="attr-track"><div class="attr-fill discipline" style="width:42%"></div></div><span class="attr-value">84</span></div>
@@ -446,7 +446,7 @@
           <!-- Quests -->
           <div>
             <div class="section-title" style="font-size:0.65rem">Today's Quests</div>
-            <div class="preview-quests">
+            <div class="preview-quests" id="cc-quests">
               <div class="preview-quest-item">
                 <span>⚔</span>
                 <div style="flex:1">
@@ -484,7 +484,7 @@
           </div>
         </div>
         <!-- XP Bar -->
-        <div style="margin-top:var(--space-lg)">
+        <div style="margin-top:var(--space-lg)" id="cc-xp">
           <div class="xp-bar-container">
             <div class="xp-bar-labels">
               <span class="text-cyan text-sm font-bold">LV8 → LV9</span>
@@ -621,6 +621,77 @@
       containerId: 'nav-auth-slot',
       heroCtaId: 'hero-cta-start',
     });
+
+    // ─── Command Center card: real character when logged in ───────
+    // Anonymous visitors keep the static preview mock; logged-in users
+    // get their own live stats from the API.
+    (async () => {
+      let user;
+      try {
+        user = await API.auth.me();
+      } catch {
+        return; // not logged in — keep the marketing mock
+      }
+      if (!user || user.needsProfile) return;
+
+      let profile, attrs, activeQuests = null;
+      try {
+        [profile, attrs] = await Promise.all([
+          API.profile.get(),
+          API.attributes.get(),
+        ]);
+      } catch {
+        return; // API hiccup — keep the mock rather than a broken card
+      }
+      try {
+        const q = await API.quests.list({ status: 'ACTIVE', limit: 3 });
+        activeQuests = q.quests || q || [];
+      } catch { /* quests panel is optional */ }
+
+      const AVATARS = { scholar: '🧙', warrior: '⚔️', rogue: '🗡️', guardian: '🛡️', mage: '🔮', ranger: '🏹', paladin: '✨', assassin: '🌙' };
+      const ATTRS = [
+        { key: 'intellect', icon: '🧠', label: 'INT' },
+        { key: 'strength', icon: '💪', label: 'STR' },
+        { key: 'discipline', icon: '🎯', label: 'DIS' },
+        { key: 'vitality', icon: '❤️', label: 'VIT' },
+        { key: 'focus', icon: '⚡', label: 'FOC' },
+        { key: 'social', icon: '🤝', label: 'SOC' },
+      ];
+      const DIFF = { EASY: ['easy', 'EASY'], MEDIUM: ['medium', 'MED'], HARD: ['hard', 'HARD'], EPIC: ['epic', 'EPIC'] };
+
+      document.getElementById('cc-avatar').textContent = AVATARS[profile.avatar] || '🧙';
+      document.getElementById('cc-name').textContent = profile.username;
+      document.getElementById('cc-title').textContent = `"${profile.title}"`;
+      document.getElementById('cc-streak').innerHTML = `<span class="streak-fire">🔥</span> ${profile.currentStreak} Day Streak`;
+      document.getElementById('cc-gold').innerHTML = `<div class="gold-coin"></div> ${Utils.formatNumber(profile.gold)}`;
+      document.getElementById('cc-level').textContent = `LV${profile.level}`;
+
+      document.getElementById('cc-attrs').innerHTML = ATTRS.map(a => {
+        const val = attrs?.[a.key] || 0;
+        const pct = Math.min((val / 200) * 100, 100);
+        return `<div class="attr-bar-row"><span class="attr-name">${a.icon} ${a.label}</span><div class="attr-track"><div class="attr-fill ${a.key}" style="width:${pct}%"></div></div><span class="attr-value">${val}</span></div>`;
+      }).join('');
+
+      document.getElementById('cc-xp').innerHTML = Utils.buildXPBar(profile.currentXp, profile.xpRequired, profile.level);
+
+      const questList = (activeQuests || []).slice(0, 3);
+      document.getElementById('cc-quests').innerHTML = questList.length
+        ? questList.map(q => {
+            const [cls, label] = DIFF[q.difficulty] || DIFF.MEDIUM;
+            return `<div class="preview-quest-item" style="border-left-color:var(--diff-${cls})">
+              <span>⚔</span>
+              <div style="flex:1">
+                <div style="font-weight:700;font-size:0.85rem">${q.title}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">${q.description || ''}</div>
+              </div>
+              <div style="display:flex;gap:4px">
+                <span class="reward-chip xp" style="font-size:0.65rem">+${q.xpReward} XP</span>
+                <span class="diff-badge ${cls}" style="font-size:0.6rem">${label}</span>
+              </div>
+            </div>`;
+          }).join('')
+        : `<div class="preview-quest-item"><span>⚔</span><div style="flex:1"><div style="font-weight:700;font-size:0.85rem">No active quests</div><div style="font-size:0.75rem;color:var(--text-muted)">Log an activity to generate today's quests</div></div></div>`;
+    })();
   </script>
 </body>
 </html>
