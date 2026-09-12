@@ -108,7 +108,7 @@ app.use('/api/auth/login', authLimiter);
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 app.use(session({
-  key: 'life_rpg_session',
+  key: 'lifequest_session',
   secret: process.env.SESSION_SECRET || 'change-me-in-production',
   store: sessionStore,
   resave: false,
@@ -171,7 +171,7 @@ app.use((err, req, res, next) => {
 // ─── Start Server ─────────────────────────────────────────────────────────────
 if (require.main === module) {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🎮 Life RPG Backend running on port ${PORT} (bound to 0.0.0.0)`);
+    console.log(`\n🎮 Life Quest Backend running on port ${PORT} (bound to 0.0.0.0)`);
     console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`);
   });
 }

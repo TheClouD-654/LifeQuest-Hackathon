@@ -1,7 +1,7 @@
 {
-  "name": "life-rpg-backend",
+  "name": "lifequest-backend",
   "version": "1.0.0",
-  "description": "Life RPG - Backend API Server",
+  "description": "Life Quest - Backend API Server",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
