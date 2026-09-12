@@ -210,6 +210,11 @@
       box-shadow: var(--shadow-card), var(--shadow-glow-cyan);
     }
 
+    /* Odd card count: center the orphan in the last row (3-col desktop) */
+    .feature-card:last-child:nth-child(3n + 1) {
+      grid-column: 2;
+    }
+
     .feature-icon {
       font-size: 2.5rem;
       margin-bottom: var(--space-md);
@@ -325,6 +330,8 @@
       .features-grid { grid-template-columns: repeat(2, 1fr); }
       .steps-grid { grid-template-columns: repeat(2, 1fr); }
       .steps-grid::before { display: none; }
+      /* Odd card count: center the orphan in the last row (2-col tablet) */
+      .feature-card:last-child:nth-child(3n + 1) { grid-column: auto / span 2; }
     }
 
     @media (max-width: 768px) {
@@ -336,6 +343,7 @@
 
       /* Feature cards: same design, richer presence on small screens */
       .features-grid { gap: var(--space-md); }
+      .feature-card:last-child:nth-child(3n + 1) { grid-column: auto; }
       .feature-card {
         position: relative;
         overflow: hidden;
