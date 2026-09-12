@@ -59,14 +59,19 @@ module.exports = (passport) => {
 
   // ─── Google OAuth Strategy ────────────────────────────────────────────────
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    const backendUrl = (process.env.BACKEND_URL || process.env.FRONTEND_URL || 'http://localhost:5000').replace(/\/+$/, '');
     passport.use(new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+        callbackURL: `${backendUrl}/api/auth/google/callback`,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          if (!profile || !profile.id) {
+            return done(new Error('Invalid Google profile data received'));
+          }
+
           // Check if user exists with this Google ID
           let user = await prisma.user.findUnique({
             where: { googleId: profile.id },
@@ -107,6 +112,7 @@ module.exports = (passport) => {
 
           return done(null, user);
         } catch (err) {
+          console.error('Google Strategy verification error:', err);
           return done(err);
         }
       }

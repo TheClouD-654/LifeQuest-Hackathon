@@ -134,8 +134,8 @@ router.get('/me', requireAuth, async (req, res) => {
 
 // ─── GET /api/auth/google ─────────────────────────────────────────────────────
 router.get('/google', (req, res, next) => {
+  const redirectBase = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    const redirectBase = process.env.FRONTEND_URL || '';
     return res.redirect(`${redirectBase}/pages/auth.html?error=google_not_configured`);
   }
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
@@ -143,18 +143,42 @@ router.get('/google', (req, res, next) => {
 
 // ─── GET /api/auth/google/callback ───────────────────────────────────────────
 router.get('/google/callback', (req, res, next) => {
+  const redirectBase = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    const redirectBase = process.env.FRONTEND_URL || '';
     return res.redirect(`${redirectBase}/pages/auth.html?error=google_not_configured`);
   }
-  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || ''}/pages/auth.html?error=google_failed` })(req, res, () => {
-    const needsProfile = !req.user.profile;
-    if (needsProfile) {
-      res.redirect(`${process.env.FRONTEND_URL || ''}/pages/character.html`);
-    } else {
-      res.redirect(`${process.env.FRONTEND_URL || ''}/pages/dashboard.html`);
+
+  passport.authenticate('google', (err, user, info) => {
+    if (err) {
+      console.error('Google OAuth callback authentication error:', err);
+      return res.redirect(`${redirectBase}/pages/auth.html?error=google_failed`);
     }
-  });
+
+    if (!user) {
+      console.warn('Google OAuth authentication failed (no user):', info);
+      return res.redirect(`${redirectBase}/pages/auth.html?error=google_failed`);
+    }
+
+    req.login(user, (loginErr) => {
+      if (loginErr) {
+        console.error('Google OAuth session login error:', loginErr);
+        return res.redirect(`${redirectBase}/pages/auth.html?error=google_failed`);
+      }
+
+      // Explicitly persist session to store before redirecting to avoid race condition with MySQL session store
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('Session save error after Google OAuth login:', saveErr);
+        }
+
+        const needsProfile = !(user && user.profile);
+        if (needsProfile) {
+          return res.redirect(`${redirectBase}/pages/character.html`);
+        }
+        return res.redirect(`${redirectBase}/pages/dashboard.html`);
+      });
+    });
+  })(req, res, next);
 });
 
 module.exports = router;

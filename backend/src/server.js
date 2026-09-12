@@ -19,34 +19,44 @@ app.set('trust proxy', 1);
 
 // ─── Database connection options for session store ────────────────────────────
 let sessionStoreOptions = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'life_rpg',
   clearExpired: true,
   checkExpirationInterval: 900000,
   expiration: 86400000,
   createDatabaseTable: true,
 };
 
+let dbPool = null;
+
 if (process.env.DATABASE_URL) {
   try {
     const parsedUrl = new URL(process.env.DATABASE_URL);
-    sessionStoreOptions.host = parsedUrl.hostname;
-    sessionStoreOptions.port = parseInt(parsedUrl.port || '3306');
-    sessionStoreOptions.user = decodeURIComponent(parsedUrl.username);
-    sessionStoreOptions.password = decodeURIComponent(parsedUrl.password);
-    sessionStoreOptions.database = parsedUrl.pathname.replace(/^\//, '').split('?')[0];
+    const poolConfig = {
+      host: parsedUrl.hostname,
+      port: parseInt(parsedUrl.port || '3306'),
+      user: decodeURIComponent(parsedUrl.username),
+      password: decodeURIComponent(parsedUrl.password),
+      database: parsedUrl.pathname.replace(/^\//, '').split('?')[0],
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    };
     if (parsedUrl.searchParams.has('ssl') || process.env.DATABASE_URL.includes('ssl') || process.env.NODE_ENV === 'production') {
-      sessionStoreOptions.ssl = { rejectUnauthorized: false };
+      poolConfig.ssl = { rejectUnauthorized: false };
     }
+    const mysql = require('mysql2/promise');
+    dbPool = mysql.createPool(poolConfig);
   } catch (e) {
-    console.warn('Could not parse DATABASE_URL for session store, using fallback config.');
+    console.warn('Could not parse DATABASE_URL for session store pool, using fallback config.');
   }
+} else {
+  sessionStoreOptions.host = process.env.DB_HOST || 'localhost';
+  sessionStoreOptions.port = parseInt(process.env.DB_PORT || '3306');
+  sessionStoreOptions.user = process.env.DB_USER || 'root';
+  sessionStoreOptions.password = process.env.DB_PASSWORD || '';
+  sessionStoreOptions.database = process.env.DB_NAME || 'life_rpg';
 }
 
-const sessionStore = new MySQLStore(sessionStoreOptions);
+const sessionStore = new MySQLStore(sessionStoreOptions, dbPool);
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet({
