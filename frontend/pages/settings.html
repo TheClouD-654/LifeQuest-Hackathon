@@ -24,7 +24,6 @@
         <img id="avatar-crop-img" alt="Selected avatar image" draggable="false">
       </div>
       <div class="avatar-crop-actions">
-        <button type="button" class="btn btn-ghost btn-sm" id="avatar-crop-camera">📷 Camera</button>
         <button type="button" class="btn btn-ghost btn-sm" id="avatar-crop-cancel">Cancel</button>
         <button type="button" class="btn btn-primary btn-sm" id="avatar-crop-use">✓ Use This Picture</button>
       </div>
@@ -117,8 +116,7 @@
                 <!-- Dynamically rendered (8 avatars + CUSTOM tile) -->
               </div>
               <input type="file" id="custom-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
-              <input type="file" id="custom-avatar-camera" accept="image/*" capture="environment" hidden>
-              <span class="form-help">Pick CUSTOM to upload an image from your device or snap one with your camera.</span>
+              <span class="form-help">Pick CUSTOM to upload an image from your device.</span>
             </div>
 
             <!-- Character / Display Name -->
@@ -420,7 +418,6 @@
     const cropStage = document.getElementById('avatar-crop-stage');
     const cropImg = document.getElementById('avatar-crop-img');
     const fileInput = document.getElementById('custom-avatar-file');
-    const cameraInput = document.getElementById('custom-avatar-camera');
     let cropState = null; // { scale, x, y } — image placement in stage coordinates
     let dragState = null;
 
@@ -474,7 +471,10 @@
         Utils.showToast('Could not read that file.', 'warning');
         return;
       }
-      cropImg.onload = () => {
+      const fitAndShow = () => {
+        // Unhide FIRST — measuring while display:none yields a 0×0 stage,
+        // which scales the image to nothing (invisible-in-stage bug).
+        cropModal.hidden = false;
         const { width: sw, height: sh } = cropStage.getBoundingClientRect();
         const scale = Math.max(sw / cropImg.naturalWidth, sh / cropImg.naturalHeight);
         cropState = {
@@ -483,14 +483,14 @@
           y: (sh - cropImg.naturalHeight * scale) / 2,
         };
         applyCropTransform();
-        cropModal.hidden = false;
       };
+      cropImg.onload = fitAndShow;
       cropImg.onerror = () => {
         closeCrop();
         Utils.showToast('Couldn\u2019t decode that image \u2014 try a different one.', 'warning');
       };
       if (cropImg.getAttribute('src') === dataUrl && cropImg.naturalWidth > 0) {
-        cropImg.onload(); // same image re-picked — load event won't refire
+        fitAndShow(); // same image re-picked — load event won't refire
       } else {
         cropImg.src = dataUrl;
       }
@@ -535,13 +535,6 @@
       if (f) openCrop(f);
       fileInput.value = '';
     });
-    cameraInput.addEventListener('change', () => {
-      const f = cameraInput.files && cameraInput.files[0];
-      if (f) openCrop(f);
-      cameraInput.value = '';
-    });
-
-    document.getElementById('avatar-crop-camera').addEventListener('click', () => cameraInput.click());
     document.getElementById('avatar-crop-cancel').addEventListener('click', closeCrop);
     cropModal.addEventListener('click', (e) => {
       if (e.target === cropModal) closeCrop(); // click on dimmed backdrop
