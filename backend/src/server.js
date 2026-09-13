@@ -22,7 +22,10 @@ const rateLimit = require('express-rate-limit');
 const MySQLStore = require('express-mysql-session')(session);
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+// Port 0 (or a blank/invalid PORT) makes Express pick a random ephemeral port,
+// which silently breaks the frontend's hardcoded http://localhost:5000 calls.
+// Ambient shells/tools sometimes export PORT=0 — fall back to 5000 in that case.
+const PORT = Number(process.env.PORT) > 0 ? Number(process.env.PORT) : 5000;
 
 // Enable reverse proxy support for HTTPS on Render / cloud platforms
 app.set('trust proxy', 1);
@@ -69,6 +72,17 @@ if (process.env.DATABASE_URL) {
 }
 
 const sessionStore = new MySQLStore(sessionStoreOptions, dbPool);
+sessionStore.on('error', (error) => {
+  console.warn('Session store handled connection warning:', error?.message || error);
+});
+
+// Process-level resilience against dropped cloud DB connections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(helmet({
@@ -112,7 +126,7 @@ app.use(express.urlencoded({ extended: true }));
 // ─── Rate Limiting ────────────────────────────────────────────────────────────
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: process.env.NODE_ENV === 'production' ? 600 : 5000,
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -120,7 +134,7 @@ const generalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: process.env.NODE_ENV === 'production' ? 50 : 500,
   message: { error: 'Too many authentication attempts. Please try again later.' },
 });
 

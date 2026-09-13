@@ -42,7 +42,7 @@ model Profile {
   currentStreak    Int       @default(0)
   longestStreak    Int       @default(0)
   lastActivityDate DateTime?
-  avatar           String    @default("warrior") @db.MediumText
+  avatar           String?   @db.MediumText
   class            String    @default("SCHOLAR")
   title            String    @default("Novice")
   country          String?
@@ -221,6 +221,14 @@ model UserSettings {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
+}
+
+model Session {
+  session_id String  @id @db.VarChar(128)
+  expires    Int     @db.UnsignedInt
+  data       String? @db.MediumText
+
+  @@map("sessions")
 }
 
 enum QuestType {

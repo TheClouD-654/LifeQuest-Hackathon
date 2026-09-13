@@ -218,14 +218,10 @@
           console.warn('Logout request completed with notice:', err);
         } finally {
           currentUser = null;
-          if (isAppNav) {
-            window.location.href = '/';
-          } else {
-            renderLoggedOut(container, heroCta);
-            if (typeof Utils !== 'undefined' && Utils.showToast) {
-              Utils.showToast('Logged out successfully', 'info');
-            }
-          }
+          // Always finish with a fresh load of the home screen. A client-side
+          // re-render leaves stale personalized sections behind (Command
+          // Center card, swapped CTAs) until the next manual refresh.
+          window.location.replace('/');
         }
       });
     }
