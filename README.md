@@ -1,190 +1,133 @@
-# ⚔ Life Quest — Turn Your Life Into an Adventure
+# ⚔️ LifeQuest — Turn Your Life Into an Adventure
 
-[![Live Deployment](https://img.shields.io/badge/Live%20Demo-Render-00d4ff?style=for-the-badge&logo=render&logoColor=white)](https://lifequest-pzxa.onrender.com/)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Public%20Repo-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/overclockedhackathon/LifeQuest)
-[![Tests Passing](https://img.shields.io/badge/Verification-30%2F30%20Passed-ffd700?style=for-the-badge&logo=checkmarx&logoColor=black)](https://github.com/overclockedhackathon/LifeQuest)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Play%20Now-00d4ff?style=for-the-badge&logo=render&logoColor=white)](https://lifequest-pzxa.onrender.com/)
+[![GitHub Release](https://img.shields.io/badge/Release-v1.0.0-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/TheClouD-654/LifeQuest-Hackathon/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-> **Live Application URL:** [https://lifequest-pzxa.onrender.com/](https://lifequest-pzxa.onrender.com/)  
-> **GitHub Repository:** [https://github.com/overclockedhackathon/LifeQuest](https://github.com/overclockedhackathon/LifeQuest)  
-> **Illustration Demo Video:** [Watch Walkthrough Video](#-illustration-walkthrough-video)
-
----
-
-## 📖 Overview
-
-Traditional productivity tools feel like chores due to the *delayed gratification* problem. **Life Quest** bridges this gap by translating real-world tasks into an engaging virtual progression system with instant feedback loops, non-linear leveling, an in-game economy, customizable avatars, and global rankings.
-
-Built on a robust full-stack architecture with a **server-authoritative** design (all XP, Gold, attributes, and level calculations occur in atomic transactions on the backend to prevent client-side tampering).
+> **🎮 Live Application:** [https://lifequest-pzxa.onrender.com](https://lifequest-pzxa.onrender.com)  
+> **📦 Repository:** [https://github.com/TheClouD-654/LifeQuest-Hackathon](https://github.com/TheClouD-654/LifeQuest-Hackathon)  
+> **👤 Creator:** [@TheClouD-654](https://github.com/TheClouD-654)
 
 ---
 
-## 🎥 Illustration Walkthrough Video
+## 🌟 Overview
 
-> **Screen Recording Deliverable:** [Demo Video Link / Submission Link](https://lifequest-pzxa.onrender.com/) *(Strictly 90–180 seconds, <100MB)*
+Most productivity tools and habit trackers feel like mundane chores. They struggle with the **delayed gratification** problem: working out, reading, or coding takes weeks or months to show visible payoff in real life.
 
-### Demonstrated Flow:
-1. **User Signup & Authentication:** Seamless registration, session cookie creation, and initial character class selection.
-2. **Quest Creation (CRUD):** Creating a custom task with categories (Coding, Fitness, Study, etc.) and difficulty ratings.
-3. **Quest Completion & Celebratory FX:** Server-side validation, particle animations, XP/Gold reward popups, and attribute gains.
-4. **Non-Linear Leveling Up:** Celebratory Level-Up overlay with sound and title unlock.
-5. **Database Persistence Verification:** Browser hard refresh (`Ctrl + F5`) demonstrating that XP, levels, attributes, gold, and session persist across devices in MySQL/TiDB Cloud.
-
----
-
-## 🎯 Core Features Checklist & Specification Compliance
-
-| Requirement (from Spec) | Implementation Details | Status |
-|---|---|:---:|
-| **User Authentication & Security** | Passport.js session auth with `httpOnly` secure cookies, bcrypt password hashing, CSRF protection, tenant isolation (User A cannot view/modify User B's quests). | ✅ Passed |
-| **Database Schema & CRUD** | 14-table relational database (TiDB / MySQL) managed by Prisma ORM. Full CRUD on tasks/quests (`POST`, `GET`, `PATCH`, `DELETE`). | ✅ Passed |
-| **RPG Progression Engine** | Server-authoritative, non-linear leveling curve where each subsequent level requires strictly more XP than the last: `XP_REQUIRED(level) = Math.floor(100 * Math.pow(level, 1.5))`. | ✅ Passed |
-| **Gamified Elements — Streaks** | Automatic consecutive-day activity tracking with daily rollover and longest-streak records stored in the database. | ✅ Passed |
-| **Gamified Elements — Attributes** | Quests and activities level up 6 core character stats: **Intellect**, **Strength**, **Discipline**, **Vitality**, **Focus**, and **Social**. | ✅ Passed |
-| **Rewards & Economy (Shop)** | Server-authoritative Armory where users spend earned Gold on virtual items, profile frames, titles, themes, and cosmetic badges. | ✅ Passed |
-| **Hall of Champions (Leaderboard)** | Global ranking podium with country flags, dynamic sort filters (Level, XP, Streaks, Gold), and instant profile view. | ✅ Passed |
-| **Custom Avatar Studio** | In-app device image upload with circular crop overlay, drag-to-pan, mouse-wheel and pinch zoom, persisted in `@db.MediumText`. | ✅ Passed |
-| **Responsive & Accessible UI** | Mobile-first responsive layout (mobile, tablet, desktop), fully navigable via keyboard (`Tab`, `Enter`, `Space`), `:focus-visible` states, and ARIA attributes for screen readers. | ✅ Passed |
+**LifeQuest** bridges that gap by turning your daily routines into a full-fledged **Role-Playing Game (RPG)**:
+- **Complete real-world tasks** ➔ Earn instant XP, Gold, and attribute stats.
+- **Micro-interactions & Audio FX** ➔ Particle bursts and celebratory sound effects when completing quests.
+- **Server-authoritative Leveling** ➔ Non-linear leveling curve that makes long-term progression genuinely rewarding.
+- **Armory & Economy** ➔ Spend earned gold on custom titles, animated profile frames, and retro color themes.
+- **Hall of Champions** ➔ Compete against others on a real-time global leaderboard.
 
 ---
 
-## 🛠 Tech Stack
+## ⚡ Core Features
 
-| Layer | Technology | Details |
+### 🗡️ Quest Board & Habit Tracker
+- **Categories:** Organize quests by real-world areas: *Coding, Fitness, Academics, Mindfulness, Social, and Chores*.
+- **Difficulty Scaling:** Choose between *Easy, Medium, Hard, and Epic* quests with scalable XP and Gold rewards.
+- **Tactile Feedback:** Satisfying spring animations, sound cues, and celebratory particle effects on completion.
+
+### 📈 Non-Linear RPG Progression
+- Server-authoritative leveling system where each level requires progressively more effort:
+  $$\text{XP Required} = \lfloor 100 \times \text{Level}^{1.5} \rfloor$$
+- Prevents client-side tampering and ensures progression feels earned.
+
+### 🧬 6 Real-World Attributes
+Every quest directly levels up one of your core character stats:
+- 🧠 **Intellect** — Coding, reading, technical skills
+- ⚔️ **Strength** — Gym, workouts, physical training
+- 🛡️ **Discipline** — Daily routines, habits, waking up on schedule
+- 💖 **Vitality** — Nutrition, hydration, sleep quality
+- 🎯 **Focus** — Deep work, distraction-free study blocks
+- 🤝 **Social** — Networking, friendships, community events
+
+### 🔥 Streaks & Momentum
+- Automatically tracks consecutive days of activity.
+- Keeps you accountable to daily momentum with streak bonuses.
+
+### 🛒 Armory & In-Game Economy
+- Earn Gold through real-life tasks and visit the Armory.
+- Unlock cosmetic titles (*"Code Wizard"*, *"Iron Lifter"*, *"Night Owl"*), animated profile borders, and retro UI themes.
+
+### 🏆 Hall of Champions
+- Global real-time ranking podium with country flags.
+- Filter rankings by Level, Total XP, Longest Streaks, or Gold amassed.
+
+### 🎨 Custom Avatar Studio
+- Built-in photo cropper with circular preview, drag-to-pan, and mouse-wheel zoom.
+- Cloud-persisted so your character looks unique across every device.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Highlights |
 |---|---|---|
-| **Frontend** | HTML5, Vanilla CSS3, Vanilla JS | Micro-interactions, spring animations, glassmorphism, responsive CSS Grid/Flexbox |
-| **Backend** | Node.js, Express.js | RESTful API, Helmet security headers, rate-limiting, CORS, express-validator |
-| **Database** | MySQL / TiDB Cloud Serverless | Relational schema managed via Prisma ORM with connection pool resilience |
-| **Auth & Sessions** | Passport.js + `express-mysql-session` | Persistent server-side session store with idle-drop reconnection handlers |
+| **Frontend** | Vanilla HTML5, CSS3, JavaScript (ES6+) | Custom glassmorphism design system, CSS micro-interactions, responsive mobile-first UI, zero bloated frameworks |
+| **Backend** | Node.js, Express.js | REST API, Helmet security headers, rate limiting, input validation |
+| **Database** | MySQL / TiDB Cloud Serverless | 14-table relational database managed via Prisma ORM |
+| **Authentication** | Passport.js + `express-mysql-session` | Persistent session cookies, bcrypt password hashing, CSRF protection |
 
 ---
 
 ## 🚀 Getting Started Locally
 
 ### Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **MySQL / TiDB**: Local MySQL 8+ or free TiDB Cloud / Aiven cluster
-- **npm**: v9+
+- [Node.js](https://nodejs.org/) (v18.0.0 or higher)
+- [MySQL](https://dev.mysql.com/) 8+ or a cloud database ([TiDB Cloud Serverless](https://tidbcloud.com/), [Aiven](https://aiven.io/), etc.)
+- npm (v9+)
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/overclockedhackathon/LifeQuest.git
-cd LifeQuest
+git clone https://github.com/TheClouD-654/LifeQuest-Hackathon.git
+cd LifeQuest-Hackathon
 ```
 
-### 2. Configure Environment Variables
-Copy the template in either root or `backend/`:
+### 2. Set Up Environment Variables
+Copy the `.env.example` template:
 ```bash
 cp .env.example backend/.env
 ```
-Edit `backend/.env` with your database credentials:
+Update `backend/.env` with your database credentials:
 ```env
 PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5000
-DATABASE_URL="mysql://root:password@localhost:3306/life_rpg"
-SESSION_SECRET="super-secret-key-at-least-32-chars-long"
+DATABASE_URL="mysql://root:yourpassword@localhost:3306/life_rpg"
+SESSION_SECRET="your-super-secret-key-at-least-32-chars-long"
 ```
 
-### 3. Install Dependencies & Initialize Database
+### 3. Install & Seed Database
 ```bash
 cd backend
 npm install
 
-# Push schema directly to database
+# Push database schema
 npx prisma db push
 
-# Seed shop items and achievements
+# Seed initial shop items and achievements
 npm run db:seed
 ```
 
-### 4. Run the Application
+### 4. Start the Application
 ```bash
-# Start backend and static frontend server
 npm start
 ```
-Visit `http://localhost:5000` in your web browser.
+Visit [http://localhost:5000](http://localhost:5000) in your browser.
 
 ---
 
-## 🧪 Automated Runtime Verification Suite
+## 👤 Author
 
-The repository includes a comprehensive 30-point end-to-end verification suite testing all core requirements and edge cases:
-
-```bash
-node backend/tests/run-all-verifications.js
-```
-
-### Verification Coverage:
-1. **Infrastructure:** Server bootstrap, static file serving, MySQL connection, Prisma schema validation.
-2. **Auth & Sessions:** Signup, login, logout, session persistence across cookies, password hashing.
-3. **Character & Profile:** Character creation, stat initialization, profile retrieval.
-4. **Quest CRUD:** Create, read, edit (PATCH), soft-delete, and duplicate prevention.
-5. **Progression:** Server-side XP calculation, non-linear level up, gold rewards, attribute increments, daily streak logic.
-6. **Security & Isolation:** Tenant isolation (User B cannot access or complete User A's quests), spoofed shop price rejection.
-7. **Economy:** Shop item fetching, purchase with gold deduction, insufficient gold error handling (400 Bad Request), equipment system.
-8. **Edge Cases & Stability:** Invalid input validation, empty task handling, all 10 frontend HTML pages responding with HTTP 200 without crashes.
+**Arunangshu (TheClouD-654)**
+- GitHub: [@TheClouD-654](https://github.com/TheClouD-654)
+- Live Web App: [https://lifequest-pzxa.onrender.com](https://lifequest-pzxa.onrender.com)
 
 ---
 
-## 📁 Repository Structure
+## 📄 License
 
-```
-LifeQuest/
-├── .env.example                 # Root environment template
-├── README.md                    # Project documentation & deliverable links
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma        # 14-table relational database schema
-│   │   └── seed.js              # Shop items, titles, frames, achievements
-│   ├── scripts/
-│   │   └── db-admin.js          # CLI tool for inspecting and managing users
-│   ├── src/
-│   │   ├── server.js            # Express server, security middleware, session store
-│   │   ├── routes/              # Auth, Quests, Profile, Shop, Inventory, Leaderboard
-│   │   ├── services/            # rpgEngine (non-linear leveling, streak, rewards)
-│   │   ├── middleware/          # requireAuth, requireProfile, rate-limiters
-│   │   └── utils/               # Prisma client, passport config
-│   └── tests/
-│       ├── run-all-verifications.js      # 30-point automated runtime test suite
-│       ├── verify-leaderboard.js         # Leaderboard sorting and flag test
-│       └── verify-avatar-persistence.js  # MediumText custom avatar storage test
-└── frontend/
-    ├── index.html               # High-converting RPG landing page
-    ├── robots.txt & sitemap.xml # SEO configuration
-    ├── css/
-    │   ├── globals.css          # Design tokens, color system, typography, focus states
-    │   ├── components.css       # Panels, buttons, modals, cards, nav HUD
-    │   └── animations.css       # Spring keyframes, particles, level-up celebration
-    ├── js/
-    │   ├── api/api.js           # Centralized API client
-    │   ├── utils/helpers.js     # Toast notifications, formatters, flag mapping
-    │   └── animations/          # Quest complete & level-up sequence orchestrator
-    └── pages/
-        ├── auth.html            # Sign in / Sign up with instant validation
-        ├── character.html       # Character class and appearance selection
-        ├── dashboard.html       # Command center status screen & live stats
-        ├── quests.html          # Quest board (Today's, Custom, Completed)
-        ├── activity.html        # Real-world habit and activity logging
-        ├── leaderboard.html     # Hall of Champions podium & global rankings
-        ├── shop.html            # Armory for titles, frames, themes, and badges
-        ├── inventory.html       # Item equipment and inventory management
-        ├── stats.html           # Lifetime analytics, charts, and achievements
-        └── settings.html        # Account settings, custom avatar cropper
-```
-
----
-
-## 🛡 Zero-Tolerance Disqualification Compliance
-
-| Disqualification Rule | Life Quest Status | Evidence |
-|---|---|---|
-| **Broken Links** | ✅ Passed | Public GitHub repo, live Render deployment active with 200 OK health endpoint. |
-| **Fake Data Persistence** | ✅ Passed | All data stored in TiDB Cloud / MySQL; zero reliance on `localStorage` for primary state. |
-| **Build / Deployment Failure** | ✅ Passed | Live app serves frontend and backend smoothly with zero cold-crash or DB disconnect halts. |
-| **Console / Runtime Crashes** | ✅ Passed | Graceful error states, modal traps, input validation, and zero unhandled rejections. |
-| **Invalid Repository** | ✅ Passed | 25+ chronological, detailed commits with both frontend and backend source code included. |
-| **Video Format** | ✅ Compliant | Video section prepared adhering strictly to 90–180s length and <100MB constraints. |
-
----
-
-*Life Quest — Built for the Overclocked Hackathon*
+This project is licensed under the [MIT License](LICENSE).
