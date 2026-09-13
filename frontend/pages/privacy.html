@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Life Quest</title>
+  <meta name="description" content="Life Quest Privacy Policy. Learn how your account, gameplay progression, session data, and custom avatars are securely handled and protected.">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .legal-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-md) var(--space-3xl);
+    }
+    .legal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-card);
+      line-height: 1.7;
+    }
+    .legal-card h1 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--accent-cyan);
+      margin-bottom: var(--space-xs);
+    }
+    .legal-card h2 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--accent-gold);
+      margin-top: var(--space-xl);
+      margin-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: var(--space-xs);
+    }
+    .legal-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xl);
+    }
+    .legal-card p, .legal-card ul {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: var(--space-md);
+    }
+    .legal-card ul {
+      padding-left: var(--space-lg);
+      list-style-type: disc;
+    }
+    .legal-card li {
+      margin-bottom: var(--space-xs);
+    }
+    .badge-updated {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid var(--border-panel);
+      border-radius: var(--radius-sm);
+      color: var(--accent-cyan);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .data-pill {
+      display: inline-block;
+      padding: 1px 6px;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 4px;
+      color: var(--accent-gold);
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo" aria-label="Life Quest Home">⚔ LIFE QUEST</a>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <a href="/" class="btn btn-ghost btn-sm">← Back to Home</a>
+        <a href="/pages/auth.html" class="btn btn-primary btn-sm">Enter the Realm</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="legal-container">
+    <div class="legal-card">
+      <span class="badge-updated">Updated: September 2026</span>
+      <h1 style="margin-top: var(--space-sm);">Privacy Policy</h1>
+      <p class="legal-meta">Your privacy and data sovereignty are paramount in the realm of Life Quest. Learn what information we collect and how we safeguard it.</p>
+
+      <h2>1. Introduction</h2>
+      <p>This Privacy Policy explains how <strong>Life Quest</strong> ("we", "us", "our") collects, protects, uses, and discloses information when you use our web application located at <a href="https://lifequest-pzxa.onrender.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan); text-decoration:underline;">lifequest-pzxa.onrender.com</a>.</p>
+
+      <h2>2. Information We Collect</h2>
+      <p>We only collect information necessary to provide, calculate, and synchronize your gameplay progression:</p>
+      <ul>
+        <li><strong>Account Information:</strong> When you register an account, we collect your <span class="data-pill">username</span>, <span class="data-pill">email address</span>, and a salted cryptographic hash of your <span class="data-pill">password</span> (generated via bcrypt with 10 salt rounds). We never store plaintext passwords.</li>
+        <li><strong>Gameplay & Progression Data:</strong> Quests created and completed, category selections (e.g. Coding, Fitness, Study), earned Experience Points (XP), in-game Gold balances, streak counts, unlocked achievements, and attribute distribution (Strength, Intellect, Discipline, Vitality, Focus, Social).</li>
+        <li><strong>Avatar Media:</strong> If you use our Avatar Studio to upload a custom profile picture, the cropped image data is stored securely in your user record and served to display your character across devices and leaderboards.</li>
+        <li><strong>Authentication Logs:</strong> Timestamps of recent logins and session identifiers stored in our persistent session store.</li>
+      </ul>
+
+      <h2>3. Third-Party Authentication (Google OAuth)</h2>
+      <p>If you choose to sign in via Google OAuth, we receive your Google user ID, name, email address, and profile picture URL as permitted by your Google privacy settings. We do not obtain access to your Google password, Google Drive, or any other personal Google account data.</p>
+
+      <h2>4. How We Use Your Information</h2>
+      <p>We utilize your data strictly for legitimate platform purposes:</p>
+      <ul>
+        <li>Authenticating your identity and maintaining secure sessions via encrypted cookies.</li>
+        <li>Calculating non-linear RPG level-ups, attribute distribution, and streak milestones on our server.</li>
+        <li>Displaying public leaderboards on the Hall of Champions (only displaying your username, country flag, level, character class, and avatar).</li>
+        <li>Preventing cheating, abusive behavior, and duplicate task exploits.</li>
+      </ul>
+
+      <h2>5. Data Security & Storage</h2>
+      <p>We implement robust technical and architectural security measures to safeguard your information:</p>
+      <ul>
+        <li><strong>Encrypted Transport:</strong> All data transmitted between your browser and our server is secured using Transport Layer Security (HTTPS/SSL).</li>
+        <li><strong>Encrypted Database:</strong> Application data is stored in a secure cloud MySQL/TiDB database with strict TLS transport and connection-pooling isolation.</li>
+        <li><strong>HttpOnly Cookies:</strong> Authentication tokens are stored inside browser cookies flagged with <span class="data-pill">httpOnly</span> and <span class="data-pill">SameSite=Lax</span> to prevent Cross-Site Scripting (XSS) extraction.</li>
+        <li><strong>Tenant Isolation:</strong> Backend API routes verify account ownership on every database operation; users cannot view, edit, or delete another user's personal quests or attributes.</li>
+      </ul>
+
+      <h2>6. Cookies & Tracking Technologies</h2>
+      <p>Life Quest uses strictly necessary first-party session cookies to keep you signed in. We <strong>do not</strong> use third-party advertising cookies, behavioral tracking pixels, or sell your personal data to data brokers.</p>
+
+      <h2>7. Your Rights & Data Sovereignty</h2>
+      <p>You have complete ownership and control over your personal data:</p>
+      <ul>
+        <li><strong>Access & Correction:</strong> You can review and update your profile information, password, and custom avatar at any time in the Settings page.</li>
+        <li><strong>Data Deletion:</strong> You have the right to request deletion of your account and all associated gameplay logs, quests, and statistics.</li>
+      </ul>
+
+      <h2>8. Children's Privacy</h2>
+      <p>Life Quest does not knowingly collect or solicit personal information from children under the age of 13. If you believe a child under 13 has provided us with personal information, please contact us so we can promptly delete the data.</p>
+
+      <h2>9. Contact Us</h2>
+      <p>If you have any questions or feedback regarding this Privacy Policy, please contact us via our public repository: <a href="https://github.com/overclockedhackathon/LifeQuest" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan); text-decoration:underline;">https://github.com/overclockedhackathon/LifeQuest</a>.</p>
+    </div>
+  </main>
+
+  <footer role="contentinfo" style="padding: var(--space-xl) 0; text-align: center; border-top: 1px solid var(--border-subtle); margin-top: var(--space-2xl);">
+    <div class="container">
+      <p>⚔ <strong style="color:var(--accent-cyan)">Life Quest</strong> — Turn Your Life Into an Adventure</p>
+      <div style="margin-top: 8px; display: flex; gap: 16px; justify-content: center; font-size: 0.85rem;">
+        <a href="/pages/terms.html" style="color: var(--text-muted); text-decoration: underline;">Terms of Service</a>
+        <span style="color:var(--text-muted)">•</span>
+        <a href="/pages/privacy.html" style="color: var(--accent-cyan); text-decoration: underline;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/utils/helpers.js"></script>
+  <script>
+    if (typeof Utils !== 'undefined' && Utils.initParticles) {
+      Utils.initParticles();
+    }
+  </script>
+</body>
+</html>
