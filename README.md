@@ -6,6 +6,7 @@
 
 > **🎮 Live Application:** [https://lifequest-pzxa.onrender.com](https://lifequest-pzxa.onrender.com)  
 > **📦 Repository:** [https://github.com/TheClouD-654/LifeQuest-Hackathon](https://github.com/TheClouD-654/LifeQuest-Hackathon)  
+> **🎥 Video Walkthrough:** [Watch Demo on YouTube](https://youtu.be/ykyJNNiLiTM)  
 > **👤 Creator:** [@TheClouD-654](https://github.com/TheClouD-654)
 
 ---
@@ -20,6 +21,16 @@ Most productivity tools and habit trackers feel like mundane chores. They strugg
 - **Server-authoritative Leveling** ➔ Non-linear leveling curve that makes long-term progression genuinely rewarding.
 - **Armory & Economy** ➔ Spend earned gold on custom titles, animated profile frames, and retro color themes.
 - **Hall of Champions** ➔ Compete against others on a real-time global leaderboard.
+
+---
+
+## 🎥 Walkthrough Video
+
+Watch the full gameplay loop and feature walkthrough:
+
+[![LifeQuest Walkthrough](https://img.shields.io/badge/YouTube-Watch%20Walkthrough%20Video-red?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/ykyJNNiLiTM)
+
+> **Local Demo File:** [`demo/LifeQuest.mp4`](demo/LifeQuest.mp4) (Full 2-minute walkthrough covering user onboarding, quest creation, celebratory particle FX, non-linear leveling, and real-time database persistence).
 
 ---
 
