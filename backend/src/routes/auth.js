@@ -125,6 +125,34 @@ router.delete('/account', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Fetch user to verify credentials
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // If user has a passwordHash, verify password
+    if (user.passwordHash) {
+      const { password } = req.body || {};
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required to confirm account deletion' });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.passwordHash);
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Incorrect password. Account deletion aborted.' });
+      }
+    } else {
+      // For Google OAuth users (no passwordHash set)
+      const { confirmation } = req.body || {};
+      if (confirmation !== 'DELETE') {
+        return res.status(400).json({ error: 'Please type DELETE to confirm account deletion' });
+      }
+    }
+
     // Permanently delete user from database (cascades profile, quests, inventory, etc.)
     await prisma.user.delete({
       where: { id: userId },
