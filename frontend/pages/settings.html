@@ -817,7 +817,21 @@
       const doubleConfirm = confirm('This will permanently delete your character, attributes, quests, and gold. Are you absolutely certain?');
       if (!doubleConfirm) return;
 
-      Utils.showToast('To delete your account, please send a request to support or the administrator.', 'warning', 6000);
+      const btn = document.getElementById('delete-account-btn');
+      btn.disabled = true;
+      btn.textContent = 'Deleting Account...';
+
+      try {
+        await API.auth.deleteAccount();
+        Utils.showToast('Account successfully deleted. Farewell, Adventurer.', 'success', 3000);
+        setTimeout(() => {
+          window.location.replace('/');
+        }, 1200);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '🗑 Delete Character & Account';
+        Utils.showToast(err.message || 'Failed to delete account', 'error');
+      }
     });
 
     // Start initialization

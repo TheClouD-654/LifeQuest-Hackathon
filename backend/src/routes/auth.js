@@ -120,6 +120,41 @@ router.post('/logout', (req, res) => {
   }
 });
 
+// ─── DELETE /api/auth/account ─────────────────────────────────────────────────
+router.delete('/account', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Permanently delete user from database (cascades profile, quests, inventory, etc.)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    const finalizeDelete = () => {
+      res.clearCookie('lifequest_session');
+      res.clearCookie('life_rpg_session');
+      return res.json({ message: 'Account deleted permanently' });
+    };
+
+    if (typeof req.logout === 'function') {
+      req.logout(() => {
+        if (req.session) {
+          req.session.destroy(() => finalizeDelete());
+        } else {
+          finalizeDelete();
+        }
+      });
+    } else if (req.session) {
+      req.session.destroy(() => finalizeDelete());
+    } else {
+      finalizeDelete();
+    }
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 router.get('/me', requireAuth, async (req, res) => {
   try {

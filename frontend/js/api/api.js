@@ -58,6 +58,7 @@ const auth = {
   signup: (data) => request('POST', '/api/auth/signup', data),
   login:  (data) => request('POST', '/api/auth/login', data),
   logout: ()     => request('POST', '/api/auth/logout'),
+  deleteAccount: () => request('DELETE', '/api/auth/account'),
   me:     ()     => request('GET',  '/api/auth/me'),
   googleUrl: () => `${BASE_URL}/api/auth/google`,
 };
